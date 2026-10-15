@@ -1,0 +1,766 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1e1511">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Präpo Trío</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Figtree:wght@400;600;800&family=Kalam:wght@400;700&display=swap">
+<style>
+/* Layout: one-screen game on a walnut desk; coral paper cards like the handwritten originals, cream preposition chips, case = shape + color */
+:root{
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+  --desk:#1e1511; --desk-2:#2b1e17; --desk-line:rgba(255,220,190,.035);
+  --paper:#f2573f; --paper-ink:#2a0d08; --paper-edge:#c43d29;
+  --cream:#f6ead7; --cream-ink:#2b1e17; --cream-2:#e7d5b9;
+  --fg:#f6ead7; --muted:#b9a593; --line:rgba(246,234,215,.14);
+  --akk:#3d8cff; --akk-ink:#06173a; --dat:#ffc531; --dat-ink:#3a2a00;
+  --good:#3ddc84; --bad:#ff4d6d;
+  --f-display:"Dela Gothic One","Arial Black",Impact,sans-serif;
+  --f-hand:"Kalam","Comic Sans MS","Segoe Print",cursive;
+  --f-ui:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:dark;
+}
+html,body{height:100%;margin:0}
+body{
+  background:var(--desk);
+  background-image:repeating-linear-gradient(97deg,var(--desk-line) 0 2px,transparent 2px 9px),
+    radial-gradient(120% 70% at 50% 0%,var(--desk-2),var(--desk));
+  color:var(--fg);font-family:var(--f-ui);font-size:15px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:10px;box-sizing:border-box;
+  display:flex;flex-direction:column;overflow:hidden;
+  -webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;
+}
+*{box-sizing:border-box}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;touch-action:manipulation}
+button:focus-visible{outline:3px solid var(--dat);outline-offset:2px}
+#app{flex:1;min-height:0;display:flex;flex-direction:column;max-width:520px;width:100%;margin:0 auto;overflow-y:auto;overflow-x:hidden}
+canvas#fx{position:fixed;inset:0;pointer-events:none;z-index:50}
+
+/* ---------- header ---------- */
+.hud{display:flex;align-items:center;gap:10px;padding-block:4px 8px}
+.score{font-family:var(--f-display);font-size:28px;line-height:1;font-variant-numeric:tabular-nums;min-width:0}
+.score small{display:block;font-family:var(--f-ui);font-size:10px;letter-spacing:.14em;color:var(--muted);font-weight:800;margin-bottom:3px}
+.mult{margin-left:auto;font-family:var(--f-display);font-size:22px;padding:6px 12px;border-radius:999px;
+  background:var(--tier,var(--cream));color:#140c08;box-shadow:0 0 0 0 var(--tier);transition:box-shadow .3s,background .3s}
+.mult.hot{box-shadow:0 0 22px 2px var(--tier);animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{50%{transform:scale(1.06)}}
+.lives{font-size:20px;letter-spacing:2px;color:var(--bad)}
+.lives .off{color:rgba(246,234,215,.18)}
+.iconbtn{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);display:grid;place-items:center;font-size:17px}
+
+.streak{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.track{height:8px;border-radius:99px;background:rgba(246,234,215,.1);overflow:hidden}
+.fill{height:100%;width:0;border-radius:99px;background:var(--tier,var(--cream));transition:width .4s cubic-bezier(.2,.9,.3,1.3)}
+.streak-label{font-size:12px;color:var(--muted);display:flex;justify-content:space-between;font-variant-numeric:tabular-nums}
+.streak-label b{color:var(--fg)}
+
+/* ---------- prompt card ---------- */
+.stage{position:relative;display:flex;flex-direction:column;gap:14px}
+.es-card{position:relative;background:var(--paper);color:var(--paper-ink);border-radius:5px;padding:20px 20px 18px;
+  transform:rotate(-1.2deg);box-shadow:0 3px 0 var(--paper-edge),0 16px 28px rgba(0,0,0,.45);
+  animation:deal .45s cubic-bezier(.2,.9,.25,1.2)}
+.es-card .tag{position:absolute;top:10px;right:12px;font-size:10px;font-weight:800;letter-spacing:.14em;opacity:.65}
+.es-card .lbl{font-size:10px;font-weight:800;letter-spacing:.16em;opacity:.65}
+.es-card .es{font-family:var(--f-hand);font-weight:700;font-size:clamp(24px,7vw,32px);line-height:1.15;margin-top:4px;text-wrap:balance}
+.es-card.shake{animation:shake .45s}
+@keyframes deal{from{transform:translateY(-30px) rotate(-8deg) scale(.9);opacity:0}}
+@keyframes shake{0%,100%{transform:rotate(-1.2deg)}20%{transform:translateX(-10px) rotate(-3deg)}40%{transform:translateX(9px) rotate(1deg)}60%{transform:translateX(-6px)}80%{transform:translateX(4px)}}
+
+/* ---------- trío slots ---------- */
+.trio{display:flex;align-items:stretch;gap:6px}
+.plus{align-self:center;color:var(--muted);font-weight:800}
+.slot{flex:1;min-width:0;min-height:56px;border-radius:12px;border:2px dashed rgba(246,234,215,.28);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;padding:6px 4px;text-align:center;transition:transform .15s}
+.slot .k{font-size:9px;font-weight:800;letter-spacing:.14em;color:var(--muted)}
+.slot .v{font-weight:800;font-size:17px;line-height:1.1;overflow-wrap:anywhere}
+.slot.filled{border-style:solid;background:var(--cream);color:var(--cream-ink);border-color:var(--cream);animation:pop .25s}
+.slot.filled .k{color:rgba(43,30,23,.55)}
+.slot.akk{background:var(--akk);border-color:var(--akk);color:#fff}
+.slot.dat{background:var(--dat);border-color:var(--dat);color:var(--dat-ink)}
+.slot.akk .k,.slot.dat .k{color:inherit;opacity:.7}
+.slot.locked{border-style:solid;border-color:rgba(246,234,215,.12);background:rgba(246,234,215,.05)}
+.slot.locked .v{font-family:var(--f-display);letter-spacing:.2em;color:rgba(246,234,215,.35)}
+.slot.verb{flex:1.6}
+@keyframes pop{from{transform:scale(.8)}}
+
+/* ---------- pools ---------- */
+.pool{display:flex;flex-direction:column;gap:7px}
+.pool-h{font-size:10px;font-weight:800;letter-spacing:.16em;color:var(--muted)}
+.grid{display:grid;gap:8px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.tile{background:var(--cream);color:var(--cream-ink);border-radius:10px;min-height:48px;font-weight:800;font-size:19px;
+  box-shadow:0 4px 0 var(--cream-2);transition:transform .08s,box-shadow .08s,opacity .2s;padding:6px}
+.tile.vb{font-size:15px;font-weight:700}
+.tile:active{transform:translateY(3px);box-shadow:0 1px 0 var(--cream-2)}
+.tile.sel{background:var(--fg);outline:3px solid var(--dat);transform:translateY(2px);box-shadow:0 2px 0 var(--cream-2)}
+.cases{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.case{display:flex;align-items:center;justify-content:center;gap:10px;min-height:56px;border-radius:12px;font-weight:800;font-size:17px;transition:transform .08s,box-shadow .08s}
+.case .shape{width:18px;height:18px;display:inline-block}
+.case.akk{background:var(--akk);color:#fff;box-shadow:0 4px 0 #1d5bc0}
+.case.akk .shape{background:#fff;border-radius:3px;transform:rotate(45deg)}
+.case.dat{background:var(--dat);color:var(--dat-ink);box-shadow:0 4px 0 #c1900b}
+.case.dat .shape{background:var(--dat-ink);border-radius:50%}
+.case:active,.case.sel{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.3)}
+.case.sel{outline:3px solid var(--fg)}
+
+/* ---------- reveal sheet ---------- */
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--desk-2);border-top:1px solid var(--line);
+  border-radius:20px 20px 0 0;padding-block:18px calc(18px + env(safe-area-inset-bottom,0px));
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  box-shadow:0 -20px 40px rgba(0,0,0,.5);animation:up .35s cubic-bezier(.2,.9,.25,1.1)}
+.sheet-in{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+@keyframes up{from{transform:translateY(100%)}}
+.verdict{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.verdict h2{margin:0;font-family:var(--f-display);font-size:24px;font-weight:400}
+.verdict .pts{font-family:var(--f-display);font-size:22px;color:var(--good);font-variant-numeric:tabular-nums}
+.ok h2{color:var(--good)} .ko h2{color:var(--bad)}
+.de-card{background:var(--cream);color:var(--cream-ink);border-radius:6px;padding:16px;transform:rotate(.8deg);box-shadow:0 12px 24px rgba(0,0,0,.4)}
+.de-card .de{font-family:var(--f-hand);font-weight:700;font-size:26px;line-height:1.15;display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.de-card .pp{text-decoration:underline;text-decoration-thickness:3px;text-underline-offset:4px}
+.badge{font-family:var(--f-ui);font-size:13px;font-weight:800;padding:3px 9px;border-radius:99px;display:inline-flex;align-items:center;gap:6px}
+.badge.akk{background:var(--akk);color:#fff}.badge.dat{background:var(--dat);color:var(--dat-ink)}
+.badge .shape{width:9px;height:9px;display:inline-block;background:currentColor}
+.badge.akk .shape{transform:rotate(45deg);border-radius:1px}.badge.dat .shape{border-radius:50%}
+.de-card .ex{margin-top:10px;font-size:16px;line-height:1.4}
+.de-card .ex mark{background:transparent;color:inherit;font-weight:800;box-shadow:inset 0 -.45em 0 rgba(242,87,63,.35)}
+.de-card .tr{margin-top:4px;font-size:13px;color:rgba(43,30,23,.7)}
+.yours{font-size:13px;color:var(--muted)}
+.yours s{color:var(--bad)}
+.cta{background:var(--fg);color:#140c08;font-weight:800;font-size:17px;border-radius:14px;min-height:54px;box-shadow:0 4px 0 var(--cream-2)}
+.cta:active{transform:translateY(3px);box-shadow:0 1px 0 var(--cream-2)}
+.cta.go{background:var(--paper);color:#fff;box-shadow:0 4px 0 var(--paper-edge)}
+.ghost{border:1px solid var(--line);border-radius:14px;min-height:48px;font-weight:700}
+
+/* ---------- floating feedback ---------- */
+.float{position:fixed;left:50%;top:38%;transform:translate(-50%,-50%);z-index:60;pointer-events:none;text-align:center;
+  font-family:var(--f-display);animation:rise 1.1s ease-out forwards}
+.float.big{font-size:84px;color:var(--tier);text-shadow:0 0 30px var(--tier),0 6px 0 rgba(0,0,0,.35)}
+.float.big small{display:block;font-family:var(--f-ui);font-weight:800;font-size:15px;letter-spacing:.16em;color:var(--fg);text-shadow:none}
+@keyframes rise{0%{transform:translate(-50%,-30%) scale(.4);opacity:0}25%{transform:translate(-50%,-50%) scale(1.15);opacity:1}60%{transform:translate(-50%,-55%) scale(1)}100%{transform:translate(-50%,-90%) scale(1);opacity:0}}
+
+/* ---------- home & over ---------- */
+.home{display:flex;flex-direction:column;gap:18px;padding-block:10px 20px}
+.logo{display:flex;gap:8px;align-items:flex-end;padding-top:6px}
+.logo .c{font-family:var(--f-display);font-size:30px;line-height:1;padding:12px 12px 10px;border-radius:5px}
+.logo .c1{background:var(--paper);color:var(--paper-ink);transform:rotate(-4deg)}
+.logo .c2{background:var(--cream);color:var(--cream-ink);transform:rotate(2deg)}
+.logo .c3{width:44px;height:44px;background:var(--akk);border-radius:6px;transform:rotate(45deg);margin:0 8px 6px}
+.home h1{margin:0;font-family:var(--f-display);font-weight:400;font-size:36px;line-height:1}
+.home p{margin:0;color:var(--muted);line-height:1.45;max-width:60ch}
+.sec-h{font-size:10px;font-weight:800;letter-spacing:.16em;color:var(--muted);margin-bottom:8px}
+.modes{display:grid;gap:10px}
+.mode{display:flex;gap:12px;align-items:center;text-align:left;border:2px solid var(--line);border-radius:14px;padding:12px 14px}
+.mode.on{border-color:var(--paper);background:rgba(242,87,63,.12)}
+.mode .n{font-family:var(--f-display);font-size:26px;width:40px;flex:none;color:var(--paper)}
+.mode b{display:block;font-size:16px}
+.mode span{font-size:13px;color:var(--muted)}
+.decks{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:2px solid var(--line);border-radius:99px;padding:8px 14px;font-weight:700;font-size:14px}
+.chip.on{background:var(--cream);color:var(--cream-ink);border-color:var(--cream)}
+.chip i{font-style:normal;opacity:.6;font-weight:600;margin-left:4px}
+.ladder{display:flex;gap:6px;flex-wrap:wrap}
+.rung{font-size:12px;font-weight:800;padding:5px 8px;border-radius:8px;color:#140c08;font-variant-numeric:tabular-nums}
+.rung span{font-weight:600;opacity:.7}
+.rec{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.rec div{border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.rec small{display:block;font-size:10px;font-weight:800;letter-spacing:.14em;color:var(--muted)}
+.rec b{font-family:var(--f-display);font-weight:400;font-size:24px;font-variant-numeric:tabular-nums}
+.legend{display:flex;gap:14px;font-size:13px;color:var(--muted);flex-wrap:wrap}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.over h1{font-size:30px}
+.big-score{font-family:var(--f-display);font-size:64px;line-height:1;font-variant-numeric:tabular-nums}
+.newrec{display:inline-block;background:var(--dat);color:var(--dat-ink);font-weight:800;font-size:13px;padding:4px 10px;border-radius:99px;animation:pulse 1s infinite}
+.missed{display:flex;flex-direction:column;gap:6px}
+.miss{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid var(--line);padding-block:7px;font-size:14px}
+.miss span:first-child{color:var(--muted);min-width:0}
+.miss span:last-child{font-weight:800;text-align:right}
+.row{display:flex;gap:10px}.row>*{flex:1}
+
+/* ---------- learn mode ---------- */
+.learn{display:flex;flex-direction:column;gap:14px;padding-bottom:6px}
+.builder{border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.builder summary{cursor:pointer;font-weight:700;list-style:none;display:flex;justify-content:space-between;align-items:center}
+.builder summary::-webkit-details-marker{display:none}
+.builder summary::after{content:"＋";color:var(--muted)}
+.builder[open] summary::after{content:"－"}
+.builder-body{display:flex;flex-direction:column;gap:12px;margin-top:12px}
+.seg{display:grid;grid-template-columns:1fr 1fr;background:rgba(246,234,215,.08);border-radius:12px;padding:4px}
+.seg button{border-radius:9px;min-height:38px;font-weight:700;color:var(--muted)}
+.seg button.on{background:var(--cream);color:var(--cream-ink)}
+.flip{perspective:1200px;cursor:pointer}
+.flip-in{display:grid;transition:transform .55s cubic-bezier(.3,1.3,.5,1);transform-style:preserve-3d;animation:deal .4s cubic-bezier(.2,.9,.25,1.2)}
+.flip.on .flip-in{transform:rotateY(180deg)}
+.face{grid-area:1/1;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:6px;padding:22px 20px;min-height:230px;
+  display:flex;flex-direction:column;box-shadow:0 16px 28px rgba(0,0,0,.45)}
+.face.front{background:var(--paper);color:var(--paper-ink);box-shadow:0 3px 0 var(--paper-edge),0 16px 28px rgba(0,0,0,.45);position:relative}
+.face.front .es{font-family:var(--f-hand);font-weight:700;font-size:clamp(26px,8vw,34px);line-height:1.15;margin-top:6px;text-wrap:balance}
+.face .tag{position:absolute;top:10px;right:12px;font-size:10px;font-weight:800;letter-spacing:.14em;opacity:.65}
+.face .lbl{font-size:10px;font-weight:800;letter-spacing:.16em;opacity:.65}
+.face .hint{margin-top:auto;font-size:12px;font-weight:700;opacity:.6}
+.face.back{background:var(--cream);color:var(--cream-ink);transform:rotateY(180deg);gap:10px}
+.face.back .de{font-family:var(--f-hand);font-weight:700;font-size:28px;line-height:1.15;display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.face.back .pp{text-decoration:underline;text-decoration-thickness:3px;text-underline-offset:4px}
+.face.back .ex{font-size:16px;line-height:1.4}
+.face.back .ex mark{background:transparent;color:inherit;font-weight:800;box-shadow:inset 0 -.45em 0 rgba(242,87,63,.35)}
+.face.back .tr{font-size:13px;color:rgba(43,30,23,.7)}
+.speak{margin-top:auto;align-self:flex-start;border:2px solid rgba(43,30,23,.2);border-radius:99px;padding:6px 12px;font-weight:700;font-size:13px}
+.lnav{display:flex;align-items:center;gap:10px}
+.lnav .iconbtn{width:52px;height:46px;font-size:20px}
+.lnav .mid{flex:1;display:flex;flex-direction:column;gap:6px;align-items:center;font-variant-numeric:tabular-nums;font-weight:700}
+.lnav .track{width:100%}
+.lnav .fill{background:var(--paper)}
+.list{display:flex;flex-direction:column;gap:8px}
+.lrow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
+.lc{border-radius:5px;padding:10px 12px;font-family:var(--f-hand);font-size:16px;line-height:1.2;min-width:0;overflow-wrap:anywhere}
+.lc.es{background:var(--paper);color:var(--paper-ink);font-weight:700}
+.lc.de{background:var(--cream);color:var(--cream-ink);display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.lc.de b{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:3px}
+.lc .badge{font-size:11px;padding:2px 7px}
+.sticky{position:sticky;bottom:0;padding-top:14px;background:linear-gradient(to top,var(--desk) 65%,transparent)}
+.toast{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:70;background:var(--cream);color:var(--cream-ink);
+  font-weight:800;padding:10px 16px;border-radius:99px;box-shadow:0 10px 24px rgba(0,0,0,.4);animation:toast 2.2s forwards;pointer-events:none;white-space:nowrap}
+@keyframes toast{0%{opacity:0;transform:translate(-50%,-12px)}12%,80%{opacity:1;transform:translate(-50%,0)}100%{opacity:0}}
+.row3{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row3 .cta{grid-column:1/-1}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+</style>
+</head>
+<body>
+
+<canvas id="fx"></canvas>
+<div id="app"></div>
+<div id="sheet" hidden></div>
+
+<script>
+/* ======================= DATA =======================
+   [español, verbo alemán, preposición, caso (A/D), ejemplo, traducción, nivel]
+   M = tus tarjetas, B1, B2 */
+const RAW = [
+["hablar con (alguien)","sprechen","mit","D","Ich spreche morgen mit meinem Chef.","Mañana hablo con mi jefe.","M"],
+["esperar a (alguien o algo)","warten","auf","A","Wir warten auf den Bus.","Esperamos el bus.","M"],
+["hablar sobre (un tema o proyecto)","sprechen","über","A","Wir sprechen über das neue Projekt.","Hablamos sobre el nuevo proyecto.","M"],
+["alegrarse por (algo que ya pasó o está pasando)","sich freuen","über","A","Sie freut sich über das Geschenk.","Ella se alegra por el regalo.","M"],
+["pensar en (alguien, un compromiso)","denken","an","A","Ich denke oft an meine Familie.","Pienso a menudo en mi familia.","M"],
+["postularse para (trabajo, puesto)","sich bewerben","um","A","Er bewirbt sich um die Stelle als Controller.","Él se postula al puesto de controller.","M"],
+["encargarse de / cuidar a","sich kümmern","um","A","Ich kümmere mich um die Kinder.","Yo me encargo de los niños.","M"],
+["esperar con ansias (algo en el futuro)","sich freuen","auf","A","Wir freuen uns auf den Urlaub.","Esperamos con ansias las vacaciones.","M"],
+["interesarse por (oferta, tema)","sich interessieren","für","A","Ich interessiere mich für Prozessanalyse.","Me intereso por el análisis de procesos.","M"],
+["prepararse para","sich vorbereiten","auf","A","Ich bereite mich auf das Vorstellungsgespräch vor.","Me preparo para la entrevista.","M"],
+
+["enojarse por","sich ärgern","über","A","Er ärgert sich über den Stau.","Se enoja por el trancón.","B1"],
+["acordarse de","sich erinnern","an","A","Erinnerst du dich an unseren ersten Urlaub?","¿Te acuerdas de nuestras primeras vacaciones?","B1"],
+["acostumbrarse a","sich gewöhnen","an","A","Ich habe mich an das Wetter gewöhnt.","Me acostumbré al clima.","B1"],
+["creer en","glauben","an","A","Sie glaubt an ihre Chance.","Ella cree en su oportunidad.","B1"],
+["escribirle a (alguien)","schreiben","an","A","Ich schreibe eine E-Mail an die Kundin.","Le escribo un correo a la clienta.","B1"],
+["prestar atención a","achten","auf","A","Achte auf die Rechtschreibung!","¡Presta atención a la ortografía!","B1"],
+["responder a (pregunta, mensaje)","antworten","auf","A","Er antwortet sofort auf meine Nachricht.","Responde de inmediato a mi mensaje.","B1"],
+["estar pendiente de / vigilar","aufpassen","auf","A","Kannst du kurz auf meinen Hund aufpassen?","¿Puedes estar pendiente de mi perro un momento?","B1"],
+["fiarse de / confiar en","sich verlassen","auf","A","Du kannst dich auf mich verlassen.","Puedes confiar en mí.","B1"],
+["tener esperanza en","hoffen","auf","A","Wir hoffen auf gutes Wetter.","Esperamos que haga buen tiempo.","B1"],
+["concentrarse en","sich konzentrieren","auf","A","Ich konzentriere mich auf die Prüfung.","Me concentro en el examen.","B1"],
+["reaccionar a","reagieren","auf","A","Wie hat er auf die Nachricht reagiert?","¿Cómo reaccionó a la noticia?","B1"],
+["estar orgulloso de","stolz sein","auf","A","Ich bin stolz auf dich.","Estoy orgulloso de ti.","B1"],
+["quejarse de (algo)","sich beschweren","über","A","Die Gäste beschweren sich über den Lärm.","Los huéspedes se quejan del ruido.","B1"],
+["informarse sobre","sich informieren","über","A","Ich informiere mich über den Sprachkurs.","Me informo sobre el curso de idiomas.","B1"],
+["reírse de","lachen","über","A","Alle lachen über den Witz.","Todos se ríen del chiste.","B1"],
+["reflexionar sobre","nachdenken","über","A","Ich denke über dein Angebot nach.","Reflexiono sobre tu oferta.","B1"],
+["debatir sobre","diskutieren","über","A","Sie diskutieren über die neue Strategie.","Debaten sobre la nueva estrategia.","B1"],
+["pedir (algo a alguien)","bitten","um","A","Darf ich Sie um einen Gefallen bitten?","¿Puedo pedirle un favor?","B1"],
+["agradecer por (algo)","danken","für","A","Ich danke dir für die Einladung.","Te agradezco por la invitación.","B1"],
+["disculparse por (algo)","sich entschuldigen","für","A","Er entschuldigt sich für die Verspätung.","Se disculpa por el retraso.","B1"],
+["decidirse por","sich entscheiden","für","A","Ich habe mich für das blaue Auto entschieden.","Me decidí por el carro azul.","B1"],
+["gastar (dinero) en","ausgeben","für","A","Wie viel gibst du für die Miete aus?","¿Cuánto gastas en arriendo?","B1"],
+["velar por / procurar","sorgen","für","A","Die Eltern sorgen für ihre Kinder.","Los padres velan por sus hijos.","B1"],
+["considerar (a alguien) como","halten","für","A","Ich halte ihn für einen guten Chef.","Lo considero un buen jefe.","B1"],
+
+["participar en (curso, evento)","teilnehmen","an","D","Ich nehme an einem Deutschkurs teil.","Participo en un curso de alemán.","B1"],
+["trabajar en (un proyecto)","arbeiten","an","D","Ich arbeite gerade an einer Präsentation.","Estoy trabajando en una presentación.","B1"],
+["soñar con","träumen","von","D","Sie träumt von einer Reise nach Japan.","Sueña con un viaje a Japón.","B1"],
+["contar sobre (algo vivido)","erzählen","von","D","Er erzählt von seinem Urlaub.","Cuenta sobre sus vacaciones.","B1"],
+["depender de","abhängen","von","D","Das hängt vom Wetter ab.","Eso depende del clima.","B1"],
+["despedirse de","sich verabschieden","von","D","Wir verabschieden uns von den Gästen.","Nos despedimos de los invitados.","B1"],
+["tener miedo de","Angst haben","vor","D","Das Kind hat Angst vor dem Hund.","El niño le tiene miedo al perro.","B1"],
+["advertir sobre","warnen","vor","D","Der Arzt warnt vor dem Rauchen.","El médico advierte sobre el cigarrillo.","B1"],
+["preguntar por (el camino, algo)","fragen","nach","D","Der Tourist fragt nach dem Weg.","El turista pregunta por el camino.","B1"],
+["buscar (algo perdido)","suchen","nach","D","Ich suche nach meinem Schlüssel.","Busco mi llave.","B1"],
+["oler a","riechen","nach","D","Hier riecht es nach Kaffee.","Aquí huele a café.","B1"],
+["felicitar por","gratulieren","zu","D","Ich gratuliere dir zum Geburtstag.","Te felicito por tu cumpleaños.","B1"],
+["formar parte de","gehören","zu","D","Das gehört zu meinen Aufgaben.","Eso forma parte de mis tareas.","B1"],
+["invitar a (un evento)","einladen","zu","D","Wir laden euch zur Hochzeit ein.","Los invitamos a la boda.","B1"],
+["combinar con","passen","zu","D","Die Schuhe passen gut zum Kleid.","Los zapatos combinan bien con el vestido.","B1"],
+["ayudar con","helfen","bei","D","Kannst du mir beim Umzug helfen?","¿Me ayudas con la mudanza?","B1"],
+["agradecerle a (alguien)","sich bedanken","bei","D","Ich bedanke mich bei meiner Kollegin.","Le agradezco a mi colega.","B1"],
+["disculparse con (alguien)","sich entschuldigen","bei","D","Er entschuldigt sich bei seiner Frau.","Se disculpa con su esposa.","B1"],
+["hablar por teléfono con","telefonieren","mit","D","Ich telefoniere mit meiner Schwester.","Hablo por teléfono con mi hermana.","B1"],
+["empezar con","anfangen","mit","D","Wir fangen pünktlich mit dem Meeting an.","Empezamos la reunión puntualmente.","B1"],
+["dejar de (un hábito)","aufhören","mit","D","Er hat mit dem Rauchen aufgehört.","Dejó de fumar.","B1"],
+["reunirse con","sich treffen","mit","D","Ich treffe mich heute mit Freunden.","Hoy me reúno con amigos.","B1"],
+["conversar con","sich unterhalten","mit","D","Ich unterhalte mich mit dem Nachbarn.","Converso con el vecino.","B1"],
+["pelear con","sich streiten","mit","D","Er streitet sich oft mit seinem Bruder.","Pelea a menudo con su hermano.","B1"],
+["estar satisfecho con","zufrieden sein","mit","D","Der Chef ist mit dem Ergebnis zufrieden.","El jefe está satisfecho con el resultado.","B1"],
+["estar de acuerdo con","einverstanden sein","mit","D","Bist du mit dem Plan einverstanden?","¿Estás de acuerdo con el plan?","B1"],
+["comparar con","vergleichen","mit","D","Man kann Leipzig nicht mit Berlin vergleichen.","No se puede comparar Leipzig con Berlín.","B1"],
+["dedicarse a / ocuparse de (un tema)","sich beschäftigen","mit","D","Ich beschäftige mich mit Process Mining.","Me dedico al process mining.","B1"],
+["estar compuesto de","bestehen","aus","D","Das Team besteht aus fünf Personen.","El equipo está compuesto por cinco personas.","B1"],
+
+["abogar por / comprometerse con","sich einsetzen","für","A","Sie setzt sich für den Umweltschutz ein.","Aboga por la protección del medio ambiente.","B2"],
+["ser responsable de","verantwortlich sein","für","A","Ich bin für das Budget verantwortlich.","Soy responsable del presupuesto.","B2"],
+["avergonzarse de","sich schämen","für","A","Er schämt sich für seinen Fehler.","Se avergüenza de su error.","B2"],
+["ser apto para","sich eignen","für","A","Die Wohnung eignet sich für Familien.","El apartamento es apto para familias.","B2"],
+["luchar por","kämpfen","für","A","Die Gewerkschaft kämpft für höhere Löhne.","El sindicato lucha por salarios más altos.","B2"],
+["enamorarse de","sich verlieben","in","A","Er hat sich in sie verliebt.","Se enamoró de ella.","B2"],
+["caer en (crisis, problemas)","geraten","in","A","Die Firma ist in eine Krise geraten.","La empresa cayó en crisis.","B2"],
+["traducir a (un idioma)","übersetzen","in","A","Übersetz den Text bitte ins Deutsche.","Traduce el texto al alemán, por favor.","B2"],
+["dirigirse a (alguien)","sich wenden","an","A","Wenden Sie sich bitte an die Personalabteilung.","Diríjase por favor a recursos humanos.","B2"],
+["adaptarse a","sich anpassen","an","A","Wir passen uns an die neuen Bedingungen an.","Nos adaptamos a las nuevas condiciones.","B2"],
+["esforzarse por (lograr algo)","sich bemühen","um","A","Er bemüht sich um eine Lösung.","Se esfuerza por encontrar una solución.","B2"],
+["tratarse de","es geht","um","A","In dem Artikel geht es um Prozessoptimierung.","El artículo trata de optimización de procesos.","B2"],
+["preocuparse por","sich sorgen","um","A","Die Mutter sorgt sich um ihren Sohn.","La madre se preocupa por su hijo.","B2"],
+["prescindir de / renunciar a","verzichten","auf","A","Ich verzichte diesen Monat auf Zucker.","Este mes prescindo del azúcar.","B2"],
+["insistir en","bestehen","auf","A","Er besteht auf einer schriftlichen Antwort.","Insiste en una respuesta por escrito.","B2"],
+["referirse a","sich beziehen","auf","A","Ich beziehe mich auf Ihre E-Mail vom Montag.","Me refiero a su correo del lunes.","B2"],
+["ser decisivo / depender de (lo que importa)","ankommen","auf","A","Es kommt auf den Preis an.","Lo decisivo es el precio.","B2"],
+["contar con (alguien)","zählen","auf","A","Wir zählen auf dich.","Contamos contigo.","B2"],
+["tener curiosidad por","neugierig sein","auf","A","Ich bin neugierig auf die Ergebnisse.","Tengo curiosidad por los resultados.","B2"],
+["repercutir en","sich auswirken","auf","A","Stress wirkt sich auf die Gesundheit aus.","El estrés repercute en la salud.","B2"],
+["ponerse de acuerdo en","sich einigen","auf","A","Wir haben uns auf einen Termin geeinigt.","Nos pusimos de acuerdo en una fecha.","B2"],
+["alterarse por","sich aufregen","über","A","Reg dich nicht über Kleinigkeiten auf!","¡No te alteres por pequeñeces!","B2"],
+["disponer de","verfügen","über","A","Die Firma verfügt über viel Erfahrung.","La empresa dispone de mucha experiencia.","B2"],
+["protestar contra","protestieren","gegen","A","Tausende protestieren gegen die Reform.","Miles protestan contra la reforma.","B2"],
+["defenderse de","sich wehren","gegen","A","Er wehrt sich gegen die Vorwürfe.","Se defiende de las acusaciones.","B2"],
+["infringir / ir en contra de","verstoßen","gegen","A","Das verstößt gegen die Regeln.","Eso infringe las reglas.","B2"],
+
+["quejarse ante (alguien)","sich beschweren","bei","D","Ich beschwere mich beim Vermieter.","Me quejo ante el arrendador.","B2"],
+["postularse en (una empresa)","sich bewerben","bei","D","Sie bewirbt sich bei Siemens.","Ella se postula en Siemens.","B2"],
+["dudar de","zweifeln","an","D","Ich zweifle an seiner Ehrlichkeit.","Dudo de su honestidad.","B2"],
+["padecer (una enfermedad)","leiden","an","D","Er leidet an einer Allergie.","Padece una alergia.","B2"],
+["participar en (costos, decisiones)","sich beteiligen","an","D","Alle beteiligen sich an den Kosten.","Todos participan en los costos.","B2"],
+["orientarse por","sich orientieren","an","D","Wir orientieren uns an den Kundenwünschen.","Nos orientamos por los deseos del cliente.","B2"],
+["proteger de","schützen","vor","D","Die Creme schützt vor der Sonne.","La crema protege del sol.","B2"],
+["temerle a","sich fürchten","vor","D","Er fürchtet sich vor der Dunkelheit.","Le teme a la oscuridad.","B2"],
+["recuperarse de","sich erholen","von","D","Ich erhole mich von der Grippe.","Me recupero de la gripa.","B2"],
+["convencer de","überzeugen","von","D","Sie hat mich von ihrer Idee überzeugt.","Me convenció de su idea.","B2"],
+["separarse de","sich trennen","von","D","Er hat sich von seiner Freundin getrennt.","Se separó de su novia.","B2"],
+["beneficiarse de","profitieren","von","D","Das Team profitiert von deiner Erfahrung.","El equipo se beneficia de tu experiencia.","B2"],
+["diferenciarse de","sich unterscheiden","von","D","Das Modell unterscheidet sich kaum vom alten.","El modelo apenas se diferencia del anterior.","B2"],
+["conducir a (un resultado)","führen","zu","D","Der Fehler führte zu hohen Kosten.","El error condujo a costos altos.","B2"],
+["contribuir a","beitragen","zu","D","Jeder kann zum Erfolg beitragen.","Cada uno puede contribuir al éxito.","B2"],
+["decidirse a (hacer algo)","sich entschließen","zu","D","Sie hat sich zu einem Umzug entschlossen.","Se decidió a mudarse.","B2"],
+["anhelar / extrañar","sich sehnen","nach","D","Ich sehne mich nach der Sonne.","Anhelo el sol.","B2"],
+["averiguar sobre (precio, detalles)","sich erkundigen","nach","D","Er erkundigt sich nach dem Preis.","Averigua el precio.","B2"],
+["ajustarse a / guiarse por","sich richten","nach","D","Wir richten uns nach deinem Zeitplan.","Nos ajustamos a tu horario.","B2"],
+["contar con (que pase algo)","rechnen","mit","D","Wir rechnen mit Verspätungen.","Contamos con que haya retrasos.","B2"],
+["saber de / conocer bien","sich auskennen","mit","D","Kennst du dich mit Power BI aus?","¿Sabes de Power BI?","B2"]
+];
+const V = RAW.map((r,i)=>({i,es:r[0],de:r[1],p:r[2],c:r[3],ex:r[4],tr:r[5],lv:r[6],k:r[1]+"|"+r[2]+"|"+r[3]}));
+const BYKEY = Object.fromEntries(V.map(v=>[v.k,v]));
+const MINE = V.filter(v=>v.lv==="M").map(v=>v.k);
+const PREPS = ["an","auf","über","um","für","mit","von","vor","nach","zu","bei","aus","in","gegen"];
+const CONTR = {an:["an","am","ans"],von:["von","vom"],zu:["zu","zum","zur"],bei:["bei","beim"],in:["in","ins","im"]};
+const DECKS = {set:"Mi set",b1:"B1",b2:"B2",all:"Todo B1–B2"};
+const SOURCES = {b1:"B1",b2:"B2",all:"Todo"};
+const TIERS = [0,3,6,10,15,21,28];                 // racha mínima para x1..x7
+const TIER_COLORS = ["#f6ead7","#3ddc84","#3d8cff","#b26bff","#ff4fa3","#ffc531","#ff7a1a"];
+const CASE_NAME = {A:"Akkusativ",D:"Dativ"};
+
+/* ======================= STATE ======================= */
+let S = {screen:"home",mode:1,deck:"set",sound:true,set:MINE.slice(),setSize:10,setSrc:"all",li:0,lf:false,lview:"cards"};
+let rec = {};
+try{
+  rec = JSON.parse(localStorage.getItem("praepo-trio-rec")||"{}");
+  const sp=localStorage.getItem("praepo-trio-sound"); if(sp!==null) S.sound = sp==="1";
+  const ss=JSON.parse(localStorage.getItem("praepo-trio-set")||"null");
+  if(ss && Array.isArray(ss.keys)){ const ks=ss.keys.filter(k=>BYKEY[k]); if(ks.length) S.set=ks; if(ss.size) S.setSize=ss.size; if(ss.src) S.setSrc=ss.src; }
+}catch(e){}
+const recKey = ()=> S.mode+"-"+S.deck;
+const getRec = ()=> rec[recKey()] || {score:0,streak:0};
+function saveRec(){ try{ localStorage.setItem("praepo-trio-rec",JSON.stringify(rec)); }catch(e){} }
+function saveSet(){ try{ localStorage.setItem("praepo-trio-set",JSON.stringify({keys:S.set,size:S.setSize,src:S.setSrc})); }catch(e){} }
+const setVerbs = ()=> S.set.map(k=>BYKEY[k]).filter(Boolean);
+
+const deckList = d => d==="set" ? setVerbs() : V.filter(v=> d==="all" || (d==="b1"&&(v.lv==="M"||v.lv==="B1")) || (d==="b2"&&v.lv==="B2"));
+function newSet(){
+  const pool=deckList(S.setSrc), n=Math.min(S.setSize,pool.length);
+  const fresh=pool.filter(v=>!S.set.includes(v.k));
+  const base = fresh.length>=n ? fresh : pool;           // prioriza verbos que no estaban en el set anterior
+  S.set = shuffle(base).slice(0,n).map(v=>v.k);
+  S.li=0; S.lf=false; saveSet();
+}
+function toast(t){ const el=document.createElement("div"); el.className="toast"; el.textContent=t; document.body.appendChild(el); setTimeout(()=>el.remove(),2300); }
+const shuffle = a => { a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];} return a; };
+const tierOf = s => { let t=0; TIERS.forEach((m,i)=>{ if(s>=m) t=i; }); return t; };
+const multOf = s => tierOf(s)+1;
+
+/* ======================= AUDIO ======================= */
+let AC=null;
+function ac(){ if(!S.sound) return null; try{ if(!AC) AC=new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==="suspended") AC.resume(); }catch(e){ return null; } return AC; }
+function tone(f,dur,{type="sine",vol=.14,at=0,to=null}={}){
+  const a=ac(); if(!a) return;
+  const t=a.currentTime+at, o=a.createOscillator(), g=a.createGain();
+  o.type=type; o.frequency.setValueAtTime(f,t); if(to) o.frequency.exponentialRampToValueAtTime(to,t+dur);
+  g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(vol,t+.01); g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  o.connect(g).connect(a.destination); o.start(t); o.stop(t+dur+.02);
+}
+const st = (base,n)=> base*Math.pow(2,n/12);
+const sfx = {
+  tap(){ tone(520,.06,{type:"triangle",vol:.08}); },
+  select(n=0){ tone(st(660,n),.09,{type:"triangle",vol:.12}); },
+  correct(streak){ const b=st(523,Math.min(streak,14)); [0,4,7,12].forEach((n,i)=>tone(st(b,n),.18,{type:"triangle",vol:.13,at:i*.06})); tone(st(b,24),.3,{vol:.05,at:.24}); },
+  level(){ [0,2,4,7,9,12,16,19].forEach((n,i)=>tone(st(523,n),.16,{type:"square",vol:.06,at:i*.05})); [0,4,7,12].forEach(n=>tone(st(1046,n),.6,{vol:.04,at:.42})); },
+  wrong(){ tone(220,.32,{type:"sawtooth",vol:.09,to:90}); tone(233,.32,{type:"square",vol:.04,to:95}); },
+  over(){ [12,7,4,0,-5].forEach((n,i)=>tone(st(440,n),.28,{type:"triangle",vol:.1,at:i*.14})); },
+  start(){ [0,7,12].forEach((n,i)=>tone(st(392,n),.14,{type:"triangle",vol:.1,at:i*.07})); }
+};
+const buzz = p => { try{ navigator.vibrate && navigator.vibrate(p); }catch(e){} };
+
+/* ======================= CONFETTI ======================= */
+const cv=document.getElementById("fx"), cx=cv.getContext("2d"); let parts=[], raf=null;
+const RM = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+function sizeCv(){ const d=devicePixelRatio||1; cv.width=innerWidth*d; cv.height=innerHeight*d; cx.setTransform(d,0,0,d,0,0); }
+addEventListener("resize",sizeCv); sizeCv();
+function burst(x,y,n,colors){
+  if(RM) n=Math.min(n,12);
+  for(let k=0;k<n;k++){ const a=Math.random()*Math.PI*2, s=4+Math.random()*9;
+    parts.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-5,r:3+Math.random()*5,c:colors[k%colors.length],rot:Math.random()*6,vr:(Math.random()-.5)*.4,life:70+Math.random()*40,sq:Math.random()<.5}); }
+  if(!raf) raf=requestAnimationFrame(tick);
+}
+function tick(){
+  cx.clearRect(0,0,innerWidth,innerHeight);
+  parts=parts.filter(p=>p.life>0);
+  parts.forEach(p=>{ p.x+=p.vx; p.y+=p.vy; p.vy+=.32; p.vx*=.985; p.rot+=p.vr; p.life--;
+    cx.save(); cx.globalAlpha=Math.min(1,p.life/30); cx.translate(p.x,p.y); cx.rotate(p.rot); cx.fillStyle=p.c;
+    if(p.sq) cx.fillRect(-p.r,-p.r/2,p.r*2,p.r); else { cx.beginPath(); cx.arc(0,0,p.r/1.3,0,7); cx.fill(); }
+    cx.restore(); });
+  raf = parts.length ? requestAnimationFrame(tick) : (cx.clearRect(0,0,innerWidth,innerHeight), null);
+}
+
+/* ======================= GAME FLOW ======================= */
+const app=document.getElementById("app"), sheet=document.getElementById("sheet");
+
+function startGame(){
+  Object.assign(S,{screen:"play",phase:"pick",queue:[],score:0,streak:0,maxStreak:0,lives:3,hits:0,answered:0,missed:[],cur:null,last:null});
+  sfx.start(); nextTurn();
+}
+function nextTurn(){
+  if(!S.queue.length){ S.queue = shuffle(deckList(S.deck).map(v=>v.i)); if(S.queue.length>1 && S.queue[0]===S.last) S.queue.push(S.queue.shift()); }
+  S.cur = S.queue.shift(); S.last=S.cur;
+  const v=V[S.cur];
+  S.pick={verb:null,prep:null,case:null};
+  S.preps = shuffle([v.p, ...shuffle(PREPS.filter(p=>p!==v.p)).slice(0,5)]);
+  const pool = shuffle([...new Set(V.map(x=>x.de))].filter(d=>d!==v.de));
+  S.verbs = S.mode===2 ? shuffle([v.de, ...pool.slice(0,3)]) : [];
+  S.phase="pick"; S.t0=Date.now();
+  sheet.hidden=true; render();
+}
+function complete(){ return S.pick.prep && S.pick.case && (S.mode===1 || S.pick.verb); }
+
+function check(){
+  const v=V[S.cur], ok = S.pick.prep===v.p && S.pick.case===v.c && (S.mode===1 || S.pick.verb===v.de);
+  S.phase="reveal"; S.answered++;
+  const card=document.querySelector(".es-card"), r=card?card.getBoundingClientRect():{left:innerWidth/2,top:200,width:0,height:0};
+  let pts=0, levelUp=false, fast=false;
+  if(ok){
+    const before=multOf(S.streak);
+    S.streak++; S.hits++; S.maxStreak=Math.max(S.maxStreak,S.streak);
+    const m=multOf(S.streak); levelUp = m>before;
+    fast = Date.now()-S.t0 < 6000;
+    pts = (S.mode===1?100:150)*m + (fast?50:0);
+    S.score+=pts;
+    sfx.correct(S.streak); buzz(20);
+    burst(r.left+r.width/2, r.top+r.height/2, 40+S.streak*4, ["#f2573f","#f6ead7","#3d8cff","#ffc531",TIER_COLORS[m-1]]);
+    if(levelUp) setTimeout(()=>{ sfx.level(); buzz([30,40,60]); burst(innerWidth/2,innerHeight*.38,140,TIER_COLORS); floatBig(m); },260);
+  } else {
+    S.streak=0; S.lives--;
+    if(!S.missed.includes(S.cur)) S.missed.push(S.cur);
+    S.queue.splice(Math.min(3,S.queue.length),0,S.cur);   // vuelve pronto
+    sfx.wrong(); buzz([60,40,60]);
+    card && (card.classList.remove("shake"), void card.offsetWidth, card.classList.add("shake"));
+  }
+  updateHud();
+  setTimeout(()=>showSheet(ok,pts,fast), ok?350:500);
+}
+function floatBig(m){
+  const el=document.createElement("div"); el.className="float big"; el.style.setProperty("--tier",TIER_COLORS[m-1]);
+  el.innerHTML=`×${m}<small>RACHA ${S.streak}</small>`; document.body.appendChild(el); setTimeout(()=>el.remove(),1200);
+}
+
+function afterSheet(){
+  if(S.lives<=0){ endGame(); } else nextTurn();
+}
+function endGame(){
+  const r=getRec(); S.newRec = S.score>r.score; S.newStreak = S.maxStreak>r.streak;
+  rec[recKey()]={score:Math.max(r.score,S.score),streak:Math.max(r.streak,S.maxStreak)}; saveRec();
+  S.screen="over"; sheet.hidden=true; sfx.over(); render();
+  if(S.newRec) setTimeout(()=>{ sfx.level(); burst(innerWidth/2,innerHeight*.3,160,TIER_COLORS); },500);
+}
+
+/* ======================= RENDER ======================= */
+const caseBadge = c => `<span class="badge ${c==="A"?"akk":"dat"}"><span class="shape"></span>${c==="A"?"Akk":"Dat"}</span>`;
+function markPrep(ex,p){
+  const forms=(CONTR[p]||[p]).join("|");
+  return ex.replace(new RegExp(`(^|[^\\p{L}])(${forms})(?=[^\\p{L}]|$)`,"iu"),(m,a,b)=>`${a}<mark>${b}</mark>`);
+}
+
+function render(){
+  if(S.screen==="home") renderHome();
+  else if(S.screen==="learn") renderLearn();
+  else if(S.screen==="play") renderPlay();
+  else renderOver();
+}
+
+function renderLearn(){
+  const n=S.set.length, isMine = S.set.length===MINE.length && S.set.every(k=>MINE.includes(k));
+  app.innerHTML=`
+  <div class="learn">
+    <div class="hud">
+      <div class="score"><small>APRENDER</small>${isMine?"Mis tarjetas":"Mi set"} · ${n}</div>
+      <button class="iconbtn" style="margin-left:auto" data-act="menu" aria-label="Menú">✕</button>
+    </div>
+    <details class="builder">
+      <summary>Cambiar set · 10, 20 o 30 verbos</summary>
+      <div class="builder-body">
+        <div><div class="sec-h">CANTIDAD</div><div class="decks">${[10,20,30].map(x=>`<button class="chip ${S.setSize===x?"on":""}" data-act="size" data-v="${x}">${x}</button>`).join("")}</div></div>
+        <div><div class="sec-h">ELEGIDOS AL AZAR DE</div><div class="decks">${Object.keys(SOURCES).map(k=>`<button class="chip ${S.setSrc===k?"on":""}" data-act="src" data-v="${k}">${SOURCES[k]}<i>${deckList(k).length}</i></button>`).join("")}</div></div>
+        <div class="row"><button class="ghost" data-act="mine">Mis 10 tarjetas</button><button class="cta" data-act="newset">Nuevo set</button></div>
+      </div>
+    </details>
+    <div class="seg">
+      <button class="${S.lview==="cards"?"on":""}" data-act="view" data-v="cards">Tarjetas</button>
+      <button class="${S.lview==="list"?"on":""}" data-act="view" data-v="list">Lista</button>
+    </div>
+    <div id="lview"></div>
+    <div class="sticky"><button class="cta go" data-act="playset">Jugar con este set · ${n}</button></div>
+  </div>`;
+  renderLView();
+}
+const canSpeak = "speechSynthesis" in window;
+function renderLView(){
+  const box=document.getElementById("lview"); if(!box) return;
+  const set=setVerbs(); if(!set.length) return;
+  if(S.lview==="list"){
+    box.innerHTML=`<div class="list">${set.map(v=>`<div class="lrow"><div class="lc es">${v.es}</div><div class="lc de">${v.de} <b>${v.p}</b> ${caseBadge(v.c)}</div></div>`).join("")}</div>`;
+    return;
+  }
+  S.li=Math.max(0,Math.min(S.li,set.length-1));
+  const v=set[S.li];
+  box.innerHTML=`
+    <div class="flip ${S.lf?"on":""}" id="flip" data-act="flip" role="button" tabindex="0" aria-label="Voltear tarjeta">
+      <div class="flip-in">
+        <div class="face front"><span class="tag">${v.lv==="M"?"MIS TARJETAS":v.lv}</span><div class="lbl">ESPAÑOL</div><div class="es">${v.es}</div><div class="hint">Toca para voltear · desliza para avanzar</div></div>
+        <div class="face back"><div class="lbl">DEUTSCH</div><div class="de">${v.de} <span class="pp">${v.p}</span> ${caseBadge(v.c)}</div><div class="ex">${markPrep(v.ex,v.p)}</div><div class="tr">${v.tr}</div>
+          ${canSpeak?`<button class="speak" data-act="speak">🔈 Escuchar</button>`:""}</div>
+      </div>
+    </div>
+    <div class="lnav" style="margin-top:14px">
+      <button class="iconbtn" data-act="lprev" aria-label="Anterior">←</button>
+      <div class="mid"><span>${S.li+1} / ${set.length}</span><div class="track"><div class="fill" style="width:${(S.li+1)/set.length*100}%"></div></div></div>
+      <button class="iconbtn" data-act="lnext" aria-label="Siguiente">→</button>
+    </div>`;
+}
+function lmove(d){
+  const n=S.set.length; if(!n) return;
+  S.li=(S.li+d+n)%n; S.lf=false; sfx.select(d>0?4:0); renderLView();
+}
+function speak(v){
+  try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(`${v.de} ${v.p}. ${v.ex}`); u.lang="de-DE"; u.rate=.9; speechSynthesis.speak(u); }catch(e){}
+}
+
+function renderHome(){
+  const r=getRec();
+  const counts={set:S.set.length,b1:deckList("b1").length,b2:deckList("b2").length,all:V.length};
+  app.innerHTML=`
+  <div class="home">
+    <div class="hud" style="padding:0"><div class="logo"><div class="c c1">es</div><div class="c c2">auf</div><div class="c3"></div></div>
+      <button class="iconbtn" style="margin-left:auto" data-act="sound" aria-label="Sonido">${S.sound?"🔊":"🔇"}</button></div>
+    <div><h1>Präpo Trío</h1></div>
+    <p>Primero repasa tu set en Aprender. Después juega: lee el verbo en español y arma el trío preposición + caso. Al acertar se revela la tarjeta en alemán.</p>
+    <div class="legend"><span>${caseBadge("A")} rombo azul</span><span>${caseBadge("D")} círculo amarillo</span></div>
+    <button class="mode" data-act="learn"><span class="n">✎</span><span><b>Aprender · Mi set (${S.set.length})</b><span>Repasa las tarjetas o arma un set nuevo de 10, 20 o 30 verbos al azar.</span></span></button>
+    <div>
+      <div class="sec-h">NIVEL</div>
+      <div class="modes">
+        <button class="mode ${S.mode===1?"on":""}" data-act="mode" data-v="1"><span class="n">1</span><span><b>Conectores</b><span>Eliges preposición + caso. El verbo alemán se revela.</span></span></button>
+        <button class="mode ${S.mode===2?"on":""}" data-act="mode" data-v="2"><span class="n">2</span><span><b>Trío completo</b><span>Eliges verbo alemán + preposición + caso. 150 pts base.</span></span></button>
+      </div>
+    </div>
+    <div>
+      <div class="sec-h">MAZO</div>
+      <div class="decks">${Object.keys(DECKS).map(k=>`<button class="chip ${S.deck===k?"on":""}" data-act="deck" data-v="${k}">${DECKS[k]}<i>${counts[k]}</i></button>`).join("")}</div>
+    </div>
+    <div>
+      <div class="sec-h">MULTIPLICADOR POR RACHA · UN ERROR LO REINICIA</div>
+      <div class="ladder">${TIERS.map((t,i)=>`<span class="rung" style="background:${TIER_COLORS[i]}">×${i+1} <span>${t===0?"inicio":t+" seguidas"}</span></span>`).join("")}</div>
+    </div>
+    <div class="rec"><div><small>RÉCORD</small><b>${r.score.toLocaleString("de-DE")}</b></div><div><small>MEJOR RACHA</small><b>${r.streak}</b></div></div>
+    <button class="cta go" data-act="play">Jugar · 3 vidas</button>
+  </div>`;
+}
+
+function renderPlay(){
+  const v=V[S.cur];
+  const tagTxt = v.lv==="M" ? "MIS TARJETAS" : v.lv;
+  app.innerHTML=`
+  <div class="hud">
+    <div class="score"><small>PUNTOS</small><span id="score">0</span></div>
+    <span class="lives" id="lives"></span>
+    <span class="mult" id="mult">×1</span>
+    <button class="iconbtn" data-act="menu" aria-label="Menú">✕</button>
+  </div>
+  <div class="streak"><div class="track"><div class="fill" id="fill"></div></div><div class="streak-label" id="slabel"></div></div>
+  <div class="stage">
+    <div class="es-card"><span class="tag">${tagTxt}</span><div class="lbl">ESPAÑOL</div><div class="es">${v.es}</div></div>
+    <div class="trio" id="trio"></div>
+    ${S.mode===2?`<div class="pool"><div class="pool-h">VERBO ALEMÁN</div><div class="grid g2">${S.verbs.map(d=>`<button class="tile vb" data-act="verb" data-v="${d}">${d}</button>`).join("")}</div></div>`:""}
+    <div class="pool"><div class="pool-h">PRÄPOSITION</div><div class="grid g3">${S.preps.map(p=>`<button class="tile" data-act="prep" data-v="${p}">${p}</button>`).join("")}</div></div>
+    <div class="pool"><div class="pool-h">KASUS</div><div class="cases">
+      <button class="case akk" data-act="case" data-v="A"><span class="shape"></span>Akkusativ</button>
+      <button class="case dat" data-act="case" data-v="D"><span class="shape"></span>Dativ</button></div></div>
+  </div>`;
+  updateHud(); updatePicks();
+}
+
+function updateHud(){
+  if(S.screen!=="play") return;
+  const t=tierOf(S.streak), col=TIER_COLORS[t];
+  document.documentElement.style.setProperty("--tier",col);
+  const sc=document.getElementById("score"); if(sc) countTo(sc,S.score);
+  const m=document.getElementById("mult"); if(m){ m.textContent="×"+(t+1); m.classList.toggle("hot",t>0); }
+  const l=document.getElementById("lives"); if(l) l.innerHTML=[0,1,2].map(i=>`<span class="${i<S.lives?"":"off"}">♥</span>`).join("");
+  const next=TIERS[t+1], prev=TIERS[t];
+  const f=document.getElementById("fill"), lab=document.getElementById("slabel");
+  if(f) f.style.width = next===undefined ? "100%" : ((S.streak-prev)/(next-prev)*100)+"%";
+  if(lab) lab.innerHTML = `<span>Racha <b>${S.streak}</b></span><span>${next===undefined?"Multiplicador máximo":`${next-S.streak} más para <b>×${t+2}</b>`}</span>`;
+}
+let shown=0;
+function countTo(el,target){
+  const from=shown, t0=performance.now(), d=500; shown=target;
+  if(from===target){ el.textContent=target.toLocaleString("de-DE"); return; }
+  const step=now=>{ const k=Math.min(1,(now-t0)/d), e=1-Math.pow(1-k,3); el.textContent=Math.round(from+(target-from)*e).toLocaleString("de-DE"); if(k<1) requestAnimationFrame(step); };
+  requestAnimationFrame(step);
+}
+
+function updatePicks(){
+  const p=S.pick, trio=document.getElementById("trio"); if(!trio) return;
+  const verbSlot = S.mode===1
+    ? `<div class="slot verb locked"><span class="k">VERBO</span><span class="v">???</span></div>`
+    : `<button class="slot verb ${p.verb?"filled":""}" data-act="clear" data-v="verb"><span class="k">VERBO</span><span class="v">${p.verb||"—"}</span></button>`;
+  const caseCls = p.case ? (p.case==="A"?"filled akk":"filled dat") : "";
+  trio.innerHTML = verbSlot +
+    `<span class="plus">+</span><button class="slot ${p.prep?"filled":""}" data-act="clear" data-v="prep"><span class="k">PRÄP.</span><span class="v">${p.prep||"—"}</span></button>` +
+    `<span class="plus">+</span><button class="slot ${caseCls}" data-act="clear" data-v="case"><span class="k">KASUS</span><span class="v">${p.case?(p.case==="A"?"Akk":"Dat"):"—"}</span></button>`;
+  document.querySelectorAll('[data-act="verb"]').forEach(b=>b.classList.toggle("sel",b.dataset.v===p.verb));
+  document.querySelectorAll('[data-act="prep"]').forEach(b=>b.classList.toggle("sel",b.dataset.v===p.prep));
+  document.querySelectorAll('[data-act="case"]').forEach(b=>b.classList.toggle("sel",b.dataset.v===p.case));
+}
+
+function showSheet(ok,pts,fast){
+  const v=V[S.cur], p=S.pick;
+  const yours = ok ? "" : `<div class="yours">Tu trío: <s>${S.mode===2?p.verb+" ":""}${p.prep} + ${p.case==="A"?"Akk":"Dat"}</s></div>`;
+  sheet.innerHTML=`<div class="sheet-in">
+    <div class="verdict ${ok?"ok":"ko"}"><h2>${ok?(S.streak>=TIERS[2]?"¡Imparable!":"¡Correcto!"):"Casi"}</h2>
+      ${ok?`<span class="pts">+${pts}${fast?" ⚡":""}</span>`:`<span class="lives">${[0,1,2].map(i=>`<span class="${i<S.lives?"":"off"}">♥</span>`).join("")}</span>`}</div>
+    <div class="de-card">
+      <div class="de">${v.de} <span class="pp">${v.p}</span> ${caseBadge(v.c)}</div>
+      <div class="ex">${markPrep(v.ex,v.p)}</div>
+      <div class="tr">${v.tr}</div>
+    </div>
+    ${yours}
+    ${ok&&fast?`<div class="yours">⚡ Respuesta rápida: +50</div>`:""}
+    <button class="cta ${S.lives<=0?"":"go"}" data-act="next">${S.lives<=0?"Ver resultado":"Siguiente"}</button>
+  </div>`;
+  sheet.hidden=false;
+  const b=sheet.querySelector("[data-act=next]"); b && b.focus({preventScroll:true});
+}
+
+function renderOver(){
+  const r=getRec();
+  const acc = S.answered ? Math.round(S.hits/S.answered*100) : 0;
+  app.innerHTML=`
+  <div class="home over">
+    <div class="sec-h" style="margin:0">${DECKS[S.deck].toUpperCase()} · NIVEL ${S.mode}</div>
+    <h1>Fin de la ronda</h1>
+    <div><div class="big-score">${S.score.toLocaleString("de-DE")}</div>${S.newRec?`<span class="newrec">NUEVO RÉCORD</span>`:`<span class="yours">Récord: ${r.score.toLocaleString("de-DE")}</span>`}</div>
+    <div class="rec">
+      <div><small>MEJOR RACHA</small><b>${S.maxStreak}</b>${S.newStreak?` <span class="newrec">NUEVA</span>`:""}</div>
+      <div><small>ACIERTOS</small><b>${S.hits}/${S.answered}</b> <span class="yours">${acc}%</span></div>
+    </div>
+    ${S.missed.length?`<div><div class="sec-h">PARA REPASAR</div><div class="missed">${S.missed.map(i=>{const v=V[i];return `<div class="miss"><span>${v.es}</span><span>${v.de} ${v.p} + ${v.c==="A"?"Akk":"Dat"}</span></div>`}).join("")}</div></div>`:""}
+    <div class="row3"><button class="ghost" data-act="menu">Menú</button><button class="ghost" data-act="learn">Aprender</button><button class="cta go" data-act="play">Otra ronda</button></div>
+  </div>`;
+}
+
+/* ======================= INPUT ======================= */
+function onAct(e){
+  const b=e.target.closest("[data-act]"); if(!b) return;
+  const act=b.dataset.act, val=b.dataset.v;
+  switch(act){
+    case "sound": S.sound=!S.sound; try{localStorage.setItem("praepo-trio-sound",S.sound?"1":"0");}catch(_){} sfx.tap(); render(); break;
+    case "mode": S.mode=+val; sfx.tap(); render(); break;
+    case "deck": S.deck=val; sfx.tap(); render(); break;
+    case "play": shown=0; startGame(); break;
+    case "menu": S.screen="home"; sheet.hidden=true; sfx.tap(); render(); break;
+    case "next": sfx.tap(); afterSheet(); break;
+    case "verb": case "prep": case "case":
+      if(S.phase!=="pick") return;
+      S.pick[act]=val; sfx.select(act==="verb"?0:act==="prep"?4:7); updatePicks();
+      if(complete()){ S.phase="checking"; setTimeout(check,180); }
+      break;
+    case "clear":
+      if(S.phase!=="pick" || !S.pick[val]) return;
+      S.pick[val]=null; sfx.tap(); updatePicks(); break;
+    /* --- aprender --- */
+    case "learn": S.screen="learn"; S.lf=false; sheet.hidden=true; sfx.tap(); render(); break;
+    case "size": S.setSize=+val; sfx.tap(); b.parentElement.querySelectorAll(".chip").forEach(c=>c.classList.toggle("on",c===b)); break;
+    case "src": S.setSrc=val; sfx.tap(); b.parentElement.querySelectorAll(".chip").forEach(c=>c.classList.toggle("on",c===b)); break;
+    case "newset": newSet(); sfx.level(); burst(innerWidth/2,innerHeight*.35,70,TIER_COLORS); render(); toast(`Set nuevo: ${S.set.length} verbos`); break;
+    case "mine": S.set=MINE.slice(); S.li=0; S.lf=false; saveSet(); sfx.start(); render(); toast("Set: mis 10 tarjetas"); break;
+    case "view": S.lview=val; sfx.tap(); document.querySelectorAll('[data-act="view"]').forEach(c=>c.classList.toggle("on",c===b)); renderLView(); break;
+    case "flip":
+      if(swiped){ swiped=false; return; }
+      S.lf=!S.lf; document.getElementById("flip").classList.toggle("on",S.lf); sfx.select(S.lf?7:2);
+      break;
+    case "speak": e.stopPropagation(); speak(setVerbs()[S.li]); break;
+    case "lprev": lmove(-1); break;
+    case "lnext": lmove(1); break;
+    case "playset": S.deck="set"; shown=0; startGame(); break;
+  }
+}
+app.addEventListener("click",onAct); sheet.addEventListener("click",onAct);
+app.addEventListener("keydown",e=>{
+  if(S.screen!=="learn" || S.lview!=="cards") return;
+  if(e.key==="ArrowRight") lmove(1); else if(e.key==="ArrowLeft") lmove(-1);
+  else if((e.key===" "||e.key==="Enter") && e.target.id==="flip"){ e.preventDefault(); e.target.click(); }
+});
+let sx=null, sy=null, swiped=false;
+app.addEventListener("pointerdown",e=>{ if(e.target.closest("#flip")){ sx=e.clientX; sy=e.clientY; } });
+app.addEventListener("pointerup",e=>{
+  if(sx===null) return; const dx=e.clientX-sx, dy=e.clientY-sy; sx=null;
+  if(Math.abs(dx)>50 && Math.abs(dx)>Math.abs(dy)){ swiped=true; lmove(dx<0?1:-1); setTimeout(()=>swiped=false,350); }
+});
+
+/* ======================= BOOT ======================= */
+function start(data){
+  if(data && data.S && data.S.screen){ S=Object.assign(S,data.S); shown=S.score||0; if(S.screen==="play"){ S.phase="pick"; S.pick={verb:null,prep:null,case:null}; } }
+  if(!DECKS[S.deck]) S.deck="set";
+  if(!Array.isArray(S.set) || !S.set.length) S.set=MINE.slice();
+  if(S.screen==="play" && (S.cur==null || !V[S.cur])) S.screen="home";
+  render();
+}
+try{ window.claude?.hot?.snapshot?.(()=>({S})); }catch(e){}
+window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
+</script>
+
+</body>
+</html>
