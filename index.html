@@ -12,7 +12,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Figtree:wght@400;600;800&family=Kalam:wght@400;700&display=swap">
 <style>
-/* Layout: one-screen game on a walnut desk; coral paper cards like the handwritten originals, cream preposition chips, case = shape + color */
+/* Layout: one-screen game on a walnut desk; coral paper cards like the handwritten originals, cream answer chips, second slot = shape + color */
 :root{
   padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
   --desk:#1e1511; --desk-2:#2b1e17; --desk-line:rgba(255,220,190,.035);
@@ -55,6 +55,7 @@ canvas#fx{position:fixed;inset:0;pointer-events:none;z-index:50}
 .lives{font-size:20px;letter-spacing:2px;color:var(--bad)}
 .lives .off{color:rgba(246,234,215,.18)}
 .iconbtn{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);display:grid;place-items:center;font-size:17px}
+.topright{margin-left:auto;display:flex;gap:8px;align-items:center}
 
 .streak{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
 .track{height:8px;border-radius:99px;background:rgba(246,234,215,.1);overflow:hidden}
@@ -68,6 +69,7 @@ canvas#fx{position:fixed;inset:0;pointer-events:none;z-index:50}
   transform:rotate(-1.2deg);box-shadow:0 3px 0 var(--paper-edge),0 16px 28px rgba(0,0,0,.45);
   animation:deal .45s cubic-bezier(.2,.9,.25,1.2)}
 .es-card .tag{position:absolute;top:10px;right:12px;font-size:10px;font-weight:800;letter-spacing:.14em;opacity:.65}
+.es-card .tag.rv{opacity:1;background:var(--paper-ink);color:var(--paper);padding:2px 7px;border-radius:99px}
 .es-card .lbl{font-size:10px;font-weight:800;letter-spacing:.16em;opacity:.65}
 .es-card .es{font-family:var(--f-hand);font-weight:700;font-size:clamp(24px,7vw,32px);line-height:1.15;margin-top:4px;text-wrap:balance}
 .es-card.shake{animation:shake .45s}
@@ -89,6 +91,8 @@ canvas#fx{position:fixed;inset:0;pointer-events:none;z-index:50}
 .slot.locked{border-style:solid;border-color:rgba(246,234,215,.12);background:rgba(246,234,215,.05)}
 .slot.locked .v{font-family:var(--f-display);letter-spacing:.2em;color:rgba(246,234,215,.35)}
 .slot.verb{flex:1.6}
+.slot.wide{flex:1.7}
+.slot.wide .v{font-size:15px}
 @keyframes pop{from{transform:scale(.8)}}
 
 /* ---------- pools ---------- */
@@ -98,7 +102,7 @@ canvas#fx{position:fixed;inset:0;pointer-events:none;z-index:50}
 .g2{grid-template-columns:repeat(2,minmax(0,1fr))}
 .g3{grid-template-columns:repeat(3,minmax(0,1fr))}
 .tile{background:var(--cream);color:var(--cream-ink);border-radius:10px;min-height:48px;font-weight:800;font-size:19px;
-  box-shadow:0 4px 0 var(--cream-2);transition:transform .08s,box-shadow .08s,opacity .2s;padding:6px}
+  box-shadow:0 4px 0 var(--cream-2);transition:transform .08s,box-shadow .08s,opacity .2s;padding:6px;overflow-wrap:anywhere}
 .tile.vb{font-size:15px;font-weight:700}
 .tile:active{transform:translateY(3px);box-shadow:0 1px 0 var(--cream-2)}
 .tile.sel{background:var(--fg);outline:3px solid var(--dat);transform:translateY(2px);box-shadow:0 2px 0 var(--cream-2)}
@@ -125,13 +129,14 @@ canvas#fx{position:fixed;inset:0;pointer-events:none;z-index:50}
 .ok h2{color:var(--good)} .ko h2{color:var(--bad)}
 .de-card{background:var(--cream);color:var(--cream-ink);border-radius:6px;padding:16px;transform:rotate(.8deg);box-shadow:0 12px 24px rgba(0,0,0,.4)}
 .de-card .de{font-family:var(--f-hand);font-weight:700;font-size:26px;line-height:1.15;display:flex;flex-wrap:wrap;align-items:center;gap:8px}
-.de-card .pp{text-decoration:underline;text-decoration-thickness:3px;text-underline-offset:4px}
+.pp{text-decoration:underline;text-decoration-thickness:3px;text-underline-offset:4px}
+.arrow{font-family:var(--f-ui);opacity:.45;font-weight:600}
 .badge{font-family:var(--f-ui);font-size:13px;font-weight:800;padding:3px 9px;border-radius:99px;display:inline-flex;align-items:center;gap:6px}
 .badge.akk{background:var(--akk);color:#fff}.badge.dat{background:var(--dat);color:var(--dat-ink)}
 .badge .shape{width:9px;height:9px;display:inline-block;background:currentColor}
 .badge.akk .shape{transform:rotate(45deg);border-radius:1px}.badge.dat .shape{border-radius:50%}
 .de-card .ex{margin-top:10px;font-size:16px;line-height:1.4}
-.de-card .ex mark{background:transparent;color:inherit;font-weight:800;box-shadow:inset 0 -.45em 0 rgba(242,87,63,.35)}
+mark{background:transparent;color:inherit;font-weight:800;box-shadow:inset 0 -.45em 0 rgba(242,87,63,.35)}
 .de-card .tr{margin-top:4px;font-size:13px;color:rgba(43,30,23,.7)}
 .yours{font-size:13px;color:var(--muted)}
 .yours s{color:var(--bad)}
@@ -157,12 +162,18 @@ canvas#fx{position:fixed;inset:0;pointer-events:none;z-index:50}
 .home h1{margin:0;font-family:var(--f-display);font-weight:400;font-size:36px;line-height:1}
 .home p{margin:0;color:var(--muted);line-height:1.45;max-width:60ch}
 .sec-h{font-size:10px;font-weight:800;letter-spacing:.16em;color:var(--muted);margin-bottom:8px}
+.modebar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:-8px}
+.modebar .sec-h{margin:0}
+.back{border:1px solid var(--line);border-radius:99px;padding:7px 12px;font-weight:700;font-size:13px;white-space:nowrap}
 .modes{display:grid;gap:10px}
 .mode{display:flex;gap:12px;align-items:center;text-align:left;border:2px solid var(--line);border-radius:14px;padding:12px 14px}
 .mode.on{border-color:var(--paper);background:rgba(242,87,63,.12)}
 .mode .n{font-family:var(--f-display);font-size:26px;width:40px;flex:none;color:var(--paper)}
 .mode b{display:block;font-size:16px}
 .mode span{font-size:13px;color:var(--muted)}
+.mode.big{padding:18px 16px;border-color:rgba(246,234,215,.24)}
+.mode.big b{font-size:20px;font-family:var(--f-display);font-weight:400;margin-bottom:4px}
+.mode.big .n{font-size:34px}
 .decks{display:flex;flex-wrap:wrap;gap:8px}
 .chip{border:2px solid var(--line);border-radius:99px;padding:8px 14px;font-weight:700;font-size:14px}
 .chip.on{background:var(--cream);color:var(--cream-ink);border-color:var(--cream)}
@@ -196,6 +207,9 @@ canvas#fx{position:fixed;inset:0;pointer-events:none;z-index:50}
 .seg{display:grid;grid-template-columns:1fr 1fr;background:rgba(246,234,215,.08);border-radius:12px;padding:4px}
 .seg button{border-radius:9px;min-height:38px;font-weight:700;color:var(--muted)}
 .seg button.on{background:var(--cream);color:var(--cream-ink)}
+.seg.lang{display:inline-grid;grid-template-columns:auto auto;padding:3px;border-radius:10px}
+.seg.lang button{min-height:32px;padding:0 10px;font-size:13px;border-radius:8px}
+.reviewnote{font-size:13px;color:var(--muted);line-height:1.4}
 .flip{perspective:1200px;cursor:pointer}
 .flip-in{display:grid;transition:transform .55s cubic-bezier(.3,1.3,.5,1);transform-style:preserve-3d;animation:deal .4s cubic-bezier(.2,.9,.25,1.2)}
 .flip.on .flip-in{transform:rotateY(180deg)}
@@ -208,9 +222,7 @@ canvas#fx{position:fixed;inset:0;pointer-events:none;z-index:50}
 .face .hint{margin-top:auto;font-size:12px;font-weight:700;opacity:.6}
 .face.back{background:var(--cream);color:var(--cream-ink);transform:rotateY(180deg);gap:10px}
 .face.back .de{font-family:var(--f-hand);font-weight:700;font-size:28px;line-height:1.15;display:flex;flex-wrap:wrap;align-items:center;gap:8px}
-.face.back .pp{text-decoration:underline;text-decoration-thickness:3px;text-underline-offset:4px}
 .face.back .ex{font-size:16px;line-height:1.4}
-.face.back .ex mark{background:transparent;color:inherit;font-weight:800;box-shadow:inset 0 -.45em 0 rgba(242,87,63,.35)}
 .face.back .tr{font-size:13px;color:rgba(43,30,23,.7)}
 .speak{margin-top:auto;align-self:flex-start;border:2px solid rgba(43,30,23,.2);border-radius:99px;padding:6px 12px;font-weight:700;font-size:13px}
 .lnav{display:flex;align-items:center;gap:10px}
@@ -244,10 +256,12 @@ canvas#fx{position:fixed;inset:0;pointer-events:none;z-index:50}
 <div id="sheet" hidden></div>
 
 <script>
-/* ======================= DATA =======================
-   [español, verbo alemán, preposición, caso (A/D), ejemplo, traducción, nivel]
-   M = tus tarjetas, B1, B2 */
-const RAW = [
+/* =========================================================
+   DATA · MODO 1 · PRÄPOSITIONEN
+   [español, verbo alemán, preposición, caso (A/D), ejemplo, traducción ES, nivel]
+   M = tus tarjetas, B1, B2
+   ========================================================= */
+const PREP_RAW = [
 ["hablar con (alguien)","sprechen","mit","D","Ich spreche morgen mit meinem Chef.","Mañana hablo con mi jefe.","M"],
 ["esperar a (alguien o algo)","warten","auf","A","Wir warten auf den Bus.","Esperamos el bus.","M"],
 ["hablar sobre (un tema o proyecto)","sprechen","über","A","Wir sprechen über das neue Projekt.","Hablamos sobre el nuevo proyecto.","M"],
@@ -364,43 +378,388 @@ const RAW = [
 ["contar con (que pase algo)","rechnen","mit","D","Wir rechnen mit Verspätungen.","Contamos con que haya retrasos.","B2"],
 ["saber de / conocer bien","sich auskennen","mit","D","Kennst du dich mit Power BI aus?","¿Sabes de Power BI?","B2"]
 ];
-const V = RAW.map((r,i)=>({i,es:r[0],de:r[1],p:r[2],c:r[3],ex:r[4],tr:r[5],lv:r[6],k:r[1]+"|"+r[2]+"|"+r[3]}));
-const BYKEY = Object.fromEntries(V.map(v=>[v.k,v]));
-const MINE = V.filter(v=>v.lv==="M").map(v=>v.k);
+/* English meaning + example translation, same order as PREP_RAW */
+const PREP_EN = [
+["to talk with (someone)","Tomorrow I'll talk to my boss."],
+["to wait for (someone or something)","We're waiting for the bus."],
+["to talk about (a topic or project)","We're talking about the new project."],
+["to be happy about (something past or present)","She's happy about the gift."],
+["to think of (someone, an appointment)","I often think of my family."],
+["to apply for (a job, a position)","He's applying for the controller position."],
+["to take care of","I take care of the children."],
+["to look forward to (something in the future)","We're looking forward to the holiday."],
+["to be interested in (an offer, a topic)","I'm interested in process analysis."],
+["to prepare for","I'm preparing for the job interview."],
+["to be annoyed about","He's annoyed about the traffic jam."],
+["to remember","Do you remember our first holiday?"],
+["to get used to","I've gotten used to the weather."],
+["to believe in","She believes in her chance."],
+["to write to (someone)","I'm writing an email to the client."],
+["to pay attention to","Pay attention to the spelling!"],
+["to reply to (a question, a message)","He replies to my message right away."],
+["to keep an eye on / look after","Can you keep an eye on my dog for a moment?"],
+["to rely on / trust","You can rely on me."],
+["to hope for","We're hoping for good weather."],
+["to concentrate on","I'm concentrating on the exam."],
+["to react to","How did he react to the news?"],
+["to be proud of","I'm proud of you."],
+["to complain about (something)","The guests are complaining about the noise."],
+["to find out about","I'm finding out about the language course."],
+["to laugh at / about","Everyone is laughing at the joke."],
+["to think about / reflect on","I'm thinking about your offer."],
+["to debate / discuss","They're discussing the new strategy."],
+["to ask for (something)","May I ask you for a favor?"],
+["to thank for (something)","Thank you for the invitation."],
+["to apologize for (something)","He apologizes for being late."],
+["to decide on","I decided on the blue car."],
+["to spend (money) on","How much do you spend on rent?"],
+["to provide for / look after","Parents provide for their children."],
+["to consider (someone) to be","I consider him a good boss."],
+["to take part in (a course, an event)","I'm taking part in a German course."],
+["to work on (a project)","I'm currently working on a presentation."],
+["to dream of","She dreams of a trip to Japan."],
+["to tell about (something you lived)","He's telling us about his holiday."],
+["to depend on","That depends on the weather."],
+["to say goodbye to","We say goodbye to the guests."],
+["to be afraid of","The child is afraid of the dog."],
+["to warn about / against","The doctor warns against smoking."],
+["to ask for (directions, something)","The tourist asks for directions."],
+["to look for (something lost)","I'm looking for my key."],
+["to smell of","It smells of coffee here."],
+["to congratulate on","Happy birthday to you!"],
+["to be part of","That's part of my tasks."],
+["to invite to (an event)","We're inviting you to the wedding."],
+["to go with / match","The shoes go well with the dress."],
+["to help with","Can you help me with the move?"],
+["to thank (someone)","I thank my colleague."],
+["to apologize to (someone)","He apologizes to his wife."],
+["to be on the phone with","I'm on the phone with my sister."],
+["to start with","We start the meeting on time."],
+["to stop / quit (a habit)","He quit smoking."],
+["to meet with","I'm meeting friends today."],
+["to chat with","I'm chatting with the neighbor."],
+["to argue with","He often argues with his brother."],
+["to be satisfied with","The boss is satisfied with the result."],
+["to agree with","Do you agree with the plan?"],
+["to compare with","You can't compare Leipzig with Berlin."],
+["to work on / deal with (a topic)","I work on process mining."],
+["to consist of","The team consists of five people."],
+["to stand up for / campaign for","She campaigns for environmental protection."],
+["to be responsible for","I'm responsible for the budget."],
+["to be ashamed of","He's ashamed of his mistake."],
+["to be suitable for","The apartment is suitable for families."],
+["to fight for","The union is fighting for higher wages."],
+["to fall in love with","He fell in love with her."],
+["to get into (a crisis, trouble)","The company got into a crisis."],
+["to translate into (a language)","Please translate the text into German."],
+["to turn to / contact (someone)","Please contact the HR department."],
+["to adapt to","We're adapting to the new conditions."],
+["to make an effort to (achieve something)","He's making an effort to find a solution."],
+["to be about","The article is about process optimization."],
+["to worry about","The mother worries about her son."],
+["to do without / give up","This month I'm doing without sugar."],
+["to insist on","He insists on a written answer."],
+["to refer to","I'm referring to your email from Monday."],
+["to depend on / be what matters","It depends on the price."],
+["to count on (someone)","We're counting on you."],
+["to be curious about","I'm curious about the results."],
+["to have an effect on","Stress affects your health."],
+["to agree on","We agreed on a date."],
+["to get upset about","Don't get upset about little things!"],
+["to have (at one's disposal)","The company has a lot of experience."],
+["to protest against","Thousands are protesting against the reform."],
+["to defend oneself against","He defends himself against the accusations."],
+["to violate / go against","That violates the rules."],
+["to complain to (someone)","I'm complaining to the landlord."],
+["to apply at (a company)","She's applying at Siemens."],
+["to doubt","I doubt his honesty."],
+["to suffer from (an illness)","He suffers from an allergy."],
+["to share in (costs, decisions)","Everyone shares the costs."],
+["to be guided by","We're guided by what the customer wants."],
+["to protect from","The cream protects from the sun."],
+["to be scared of","He's scared of the dark."],
+["to recover from","I'm recovering from the flu."],
+["to convince of","She convinced me of her idea."],
+["to split up with / separate from","He split up with his girlfriend."],
+["to benefit from","The team benefits from your experience."],
+["to differ from","The model hardly differs from the old one."],
+["to lead to (a result)","The mistake led to high costs."],
+["to contribute to","Everyone can contribute to success."],
+["to decide to (do something)","She decided to move."],
+["to long for / miss","I long for the sun."],
+["to inquire about (price, details)","He inquires about the price."],
+["to go by / adapt to","We'll go by your schedule."],
+["to expect (something to happen)","We expect delays."],
+["to know about / be familiar with","Do you know your way around Power BI?"]
+];
+
+/* =========================================================
+   DATA · MODO 2 · PERFEKT
+   [español, english, Infinitiv, Hilfsverb (h=haben, s=sein), Partizip II, distractores, ejemplo, traducción ES, traducción EN, nivel]
+   B1 = A2–B1 frecuentes, B2 = avanzados
+   ========================================================= */
+const PERF_RAW = [
+["ir (a pie)","to go (on foot)","gehen","s","gegangen",["gegeht","gegehen","gangen"],"Ich bin gestern früh ins Bett gegangen.","Ayer me fui temprano a la cama.","I went to bed early yesterday.","B1"],
+["venir","to come","kommen","s","gekommen",["gekommt","gekamen","gekamt"],"Wann bist du nach Hause gekommen?","¿A qué hora llegaste a casa?","When did you come home?","B1"],
+["ir (en un vehículo)","to go (by vehicle)","fahren","s","gefahren",["gefahrt","gefuhren","gefährt"],"Wir sind mit dem Zug nach Berlin gefahren.","Fuimos en tren a Berlín.","We went to Berlin by train.","B1"],
+["volar / ir en avión","to fly","fliegen","s","geflogen",["gefliegt","gefliegen","geflagen"],"Sie ist letzte Woche nach Bogotá geflogen.","Ella voló a Bogotá la semana pasada.","She flew to Bogotá last week.","B1"],
+["quedarse","to stay","bleiben","s","geblieben",["gebleibt","gebleiben","gebliebt"],"Ich bin am Wochenende zu Hause geblieben.","El fin de semana me quedé en casa.","I stayed at home at the weekend.","B1"],
+["estar (en un lugar) / ser","to be","sein","s","gewesen",["geseint","gewest","gesind"],"Bist du schon mal in Dresden gewesen?","¿Ya has estado en Dresde?","Have you ever been to Dresden?","B1"],
+["llegar a ser / volverse","to become","werden","s","geworden",["gewerdet","gewurden","gewordet"],"Er ist letztes Jahr Vater geworden.","El año pasado se volvió papá.","He became a father last year.","B1"],
+["levantarse","to get up","aufstehen","s","aufgestanden",["geaufstanden","aufgestehen","aufgesteht"],"Ich bin heute um sechs Uhr aufgestanden.","Hoy me levanté a las seis.","I got up at six today.","B1"],
+["llegar (a un lugar)","to arrive","ankommen","s","angekommen",["geankommen","angekommt","angekamen"],"Der Zug ist pünktlich in Leipzig angekommen.","El tren llegó puntual a Leipzig.","The train arrived in Leipzig on time.","B1"],
+["pasar (¿qué pasó?)","to happen","passieren","s","passiert",["gepassiert","gepassieren","passieret"],"Was ist denn passiert?","¿Qué pasó?","What happened?","B1"],
+["correr / caminar","to run / walk","laufen","s","gelaufen",["geläuft","gelauft","geläufen"],"Wir sind heute zehn Kilometer gelaufen.","Hoy corrimos diez kilómetros.","We ran ten kilometers today.","B1"],
+["dormirse","to fall asleep","einschlafen","s","eingeschlafen",["geeinschlafen","eingeschlaft","eingeschliefen"],"Das Baby ist sofort eingeschlafen.","El bebé se durmió de inmediato.","The baby fell asleep right away.","B1"],
+["mudarse","to move (house)","umziehen","s","umgezogen",["geumzogen","umgezieht","umgezogt"],"Wir sind letztes Jahr nach Leipzig umgezogen.","El año pasado nos mudamos a Leipzig.","We moved to Leipzig last year.","B1"],
+["morir","to die","sterben","s","gestorben",["gesterbt","gestarben","gestorbt"],"Sein Großvater ist 2019 gestorben.","Su abuelo murió en 2019.","His grandfather died in 2019.","B1"],
+["hacer transbordo","to change (trains)","umsteigen","s","umgestiegen",["geumstiegen","umgesteigt","umgestiegt"],"In Halle bin ich in den ICE umgestiegen.","En Halle hice transbordo al ICE.","In Halle I changed to the ICE.","B1"],
+["viajar","to travel","reisen","s","gereist",["gereisen","gerasen","gereiset"],"Wir sind drei Wochen durch Kolumbien gereist.","Viajamos tres semanas por Colombia.","We traveled through Colombia for three weeks.","B1"],
+["hacer senderismo","to hike","wandern","s","gewandert",["gewanderen","gewandern","gewondert"],"Am Sonntag sind wir im Harz gewandert.","El domingo hicimos senderismo en el Harz.","On Sunday we went hiking in the Harz.","B1"],
+["despertarse","to wake up","aufwachen","s","aufgewacht",["geaufwacht","aufgewachen","aufgewochen"],"Ich bin um drei Uhr nachts aufgewacht.","Me desperté a las tres de la mañana.","I woke up at three in the morning.","B1"],
+["caerse","to fall","fallen","s","gefallen",["gefallt","gefielen","gefällt"],"Das Glas ist auf den Boden gefallen.","El vaso se cayó al piso.","The glass fell on the floor.","B1"],
+["volver / regresar","to come back","zurückkommen","s","zurückgekommen",["gezurückkommen","zurückgekommt","zurückgekamen"],"Wann bist du aus dem Urlaub zurückgekommen?","¿Cuándo volviste de vacaciones?","When did you come back from holiday?","B1"],
+["conducir (un vehículo)","to drive (a vehicle)","fahren","h","gefahren",["gefahrt","gefuhren","gefährt"],"Ich habe gestern das Auto meines Vaters gefahren.","Ayer conduje el carro de mi papá.","Yesterday I drove my father's car.","B1"],
+["hacer","to do / make","machen","h","gemacht",["gemachen","gemocht","machte"],"Was hast du am Wochenende gemacht?","¿Qué hiciste el fin de semana?","What did you do at the weekend?","B1"],
+["trabajar","to work","arbeiten","h","gearbeitet",["gearbeit","gearbeiten","gearbeitert"],"Ich habe sieben Jahre im Controlling gearbeitet.","Trabajé siete años en controlling.","I worked in controlling for seven years.","B1"],
+["comer","to eat","essen","h","gegessen",["geesst","gegesst","geessen"],"Wir haben gestern beim Italiener gegessen.","Ayer comimos en el italiano.","Yesterday we ate at the Italian place.","B1"],
+["beber / tomar","to drink","trinken","h","getrunken",["getrinkt","getranken","getrankt"],"Hast du heute schon Kaffee getrunken?","¿Ya tomaste café hoy?","Have you had coffee yet today?","B1"],
+["escribir","to write","schreiben","h","geschrieben",["geschreibt","geschreiben","geschriebt"],"Ich habe dir gestern eine E-Mail geschrieben.","Ayer te escribí un correo.","I wrote you an email yesterday.","B1"],
+["leer","to read","lesen","h","gelesen",["geliest","gelest","gelasen"],"Hast du das Buch schon gelesen?","¿Ya leíste el libro?","Have you read the book yet?","B1"],
+["ver","to see","sehen","h","gesehen",["gesieht","geseht","gesahen"],"Wir haben am Samstag einen Film gesehen.","El sábado vimos una película.","We saw a film on Saturday.","B1"],
+["hablar","to speak","sprechen","h","gesprochen",["gesprecht","gesprachen","gesprocht"],"Ich habe lange mit meiner Lehrerin gesprochen.","Hablé largo rato con mi profesora.","I talked with my teacher for a long time.","B1"],
+["encontrar","to find","finden","h","gefunden",["gefindet","gefanden","gefinden"],"Ich habe meinen Schlüssel endlich gefunden.","Por fin encontré mi llave.","I finally found my key.","B1"],
+["tomar (el bus, algo)","to take","nehmen","h","genommen",["genehmt","genahmen","genommt"],"Heute habe ich den Bus um acht genommen.","Hoy tomé el bus de las ocho.","Today I took the eight o'clock bus.","B1"],
+["dar","to give","geben","h","gegeben",["gegebt","gegaben","gegibt"],"Sie hat mir ihre Telefonnummer gegeben.","Ella me dio su número de teléfono.","She gave me her phone number.","B1"],
+["ayudar","to help","helfen","h","geholfen",["gehelft","gehalfen","geholft"],"Mein Nachbar hat mir beim Umzug geholfen.","Mi vecino me ayudó con la mudanza.","My neighbor helped me with the move.","B1"],
+["comprar","to buy","kaufen","h","gekauft",["gekaufen","gekoft","gekäuft"],"Ich habe ein neues Fahrrad gekauft.","Compré una bicicleta nueva.","I bought a new bike.","B1"],
+["aprender / estudiar","to learn / study","lernen","h","gelernt",["gelernen","gelarnt","gelernet"],"Heute haben wir das Perfekt gelernt.","Hoy aprendimos el Perfekt.","Today we learned the Perfekt.","B1"],
+["dormir","to sleep","schlafen","h","geschlafen",["geschlaft","geschliefen","geschläft"],"Hast du gut geschlafen?","¿Dormiste bien?","Did you sleep well?","B1"],
+["encontrarse con (alguien)","to meet","treffen","h","getroffen",["getrefft","getraffen","getrofft"],"Ich habe gestern Maria in der Stadt getroffen.","Ayer me encontré con María en el centro.","Yesterday I met Maria in town.","B1"],
+["recibir","to get / receive","bekommen","h","bekommen",["gebekommen","bekommt","bekamen"],"Ich habe eine Einladung zum Vorstellungsgespräch bekommen.","Recibí una invitación a entrevista.","I got an invitation to a job interview.","B1"],
+["entender","to understand","verstehen","h","verstanden",["geverstanden","versteht","verstandet"],"Hast du die Aufgabe verstanden?","¿Entendiste la tarea?","Did you understand the task?","B1"],
+["olvidar","to forget","vergessen","h","vergessen",["gevergessen","vergesst","vergassen"],"Ich habe meinen Regenschirm im Bus vergessen.","Olvidé mi paraguas en el bus.","I forgot my umbrella on the bus.","B1"],
+["llamar (por teléfono)","to call (on the phone)","anrufen","h","angerufen",["geanrufen","angeruft","angerieft"],"Hast du deine Mutter schon angerufen?","¿Ya llamaste a tu mamá?","Have you called your mother yet?","B1"],
+["hacer las compras","to go shopping","einkaufen","h","eingekauft",["geeinkauft","eingekaufen","eingekoft"],"Ich habe nach der Arbeit im Supermarkt eingekauft.","Después del trabajo hice compras en el supermercado.","After work I went shopping at the supermarket.","B1"],
+["pensar","to think","denken","h","gedacht",["gedenkt","gedanken","gedachen"],"Ich habe den ganzen Tag an dich gedacht.","Pensé en ti todo el día.","I thought about you all day.","B1"],
+["traer / llevar","to bring","bringen","h","gebracht",["gebringt","gebrungen","gebrachen"],"Der Kellner hat uns die Rechnung gebracht.","El mesero nos trajo la cuenta.","The waiter brought us the bill.","B1"],
+["saber (un dato)","to know (a fact)","wissen","h","gewusst",["gewisst","gewissen","geweisst"],"Das habe ich nicht gewusst.","Eso no lo sabía.","I didn't know that.","B1"],
+["conocer (a alguien)","to know (someone)","kennen","h","gekannt",["gekennt","gekonnen","gekannen"],"Hast du sie schon vorher gekannt?","¿Ya la conocías antes?","Did you know her before?","B1"],
+["pagar","to pay","bezahlen","h","bezahlt",["gebezahlt","bezahlen","bezohlt"],"Ich habe die Rechnung schon bezahlt.","Ya pagué la cuenta.","I've already paid the bill.","B1"],
+["contar (una historia)","to tell","erzählen","h","erzählt",["geerzählt","erzählen","erzahlt"],"Sie hat mir von ihrer Reise erzählt.","Ella me contó de su viaje.","She told me about her trip.","B1"],
+["preguntar","to ask","fragen","h","gefragt",["gefragen","gefrogen","gefrägt"],"Ich habe den Lehrer nach der Regel gefragt.","Le pregunté al profesor por la regla.","I asked the teacher about the rule.","B1"],
+["responder","to answer","antworten","h","geantwortet",["geantwort","geantworten","antwortet"],"Er hat auf meine Nachricht noch nicht geantwortet.","Todavía no ha respondido mi mensaje.","He hasn't answered my message yet.","B1"],
+["esperar","to wait","warten","h","gewartet",["gewart","gewarten","gewortet"],"Wir haben eine Stunde auf den Bus gewartet.","Esperamos el bus una hora.","We waited an hour for the bus.","B1"],
+["empezar / comenzar","to begin","beginnen","h","begonnen",["gebeginnt","begannen","begonnt"],"Der Kurs hat im September begonnen.","El curso empezó en septiembre.","The course began in September.","B1"],
+["perder","to lose","verlieren","h","verloren",["geverloren","verliert","verlort"],"Ich habe mein Handy im Zug verloren.","Perdí mi celular en el tren.","I lost my phone on the train.","B1"],
+["cocinar","to cook","kochen","h","gekocht",["gekochen","gekacht","gekochet"],"Heute habe ich Ajiaco für meine Freunde gekocht.","Hoy cociné ajiaco para mis amigos.","Today I cooked ajiaco for my friends.","B1"],
+["jugar","to play","spielen","h","gespielt",["gespielen","gespolt","gespielet"],"Am Abend haben wir Karten gespielt.","En la noche jugamos cartas.","In the evening we played cards.","B1"],
+["postularse","to apply (for a job)","sich bewerben","h","beworben",["gebewerbt","beworbt","bewarben"],"Ich habe mich bei Siemens beworben.","Me postulé en Siemens.","I applied at Siemens.","B1"],
+["prepararse","to prepare","sich vorbereiten","h","vorbereitet",["vorgebereitet","gevorbereitet","vorbereitete"],"Ich habe mich gut auf die Prüfung vorbereitet.","Me preparé bien para el examen.","I prepared well for the exam.","B1"],
+
+["salir bien / lograr","to turn out well","gelingen","s","gelungen",["gegelingt","gelangen","gelingt"],"Der Kuchen ist mir richtig gut gelungen.","El pastel me quedó muy bien.","My cake turned out really well.","B2"],
+["suceder / ocurrir","to occur","geschehen","s","geschehen",["gegeschehen","geschieht","geschahen"],"Was ist dort genau geschehen?","¿Qué sucedió exactamente allí?","What exactly happened there?","B2"],
+["desaparecer","to disappear","verschwinden","s","verschwunden",["geverschwunden","verschwindet","verschwanden"],"Mein Schlüssel ist spurlos verschwunden.","Mi llave desapareció sin dejar rastro.","My key has vanished without a trace.","B2"],
+["toparse con (alguien)","to run into (someone)","begegnen","s","begegnet",["gebegegnet","begegnen","begegnt"],"Ich bin meinem Chef im Supermarkt begegnet.","Me topé con mi jefe en el supermercado.","I ran into my boss at the supermarket.","B2"],
+["seguir","to follow","folgen","s","gefolgt",["gefolgen","gefalgt","gefolget"],"Wir sind dem Weg bis zum See gefolgt.","Seguimos el camino hasta el lago.","We followed the path to the lake.","B2"],
+["surgir / originarse","to arise","entstehen","s","entstanden",["geentstanden","entstehet","entstandet"],"Die Idee ist während eines Workshops entstanden.","La idea surgió durante un taller.","The idea came up during a workshop.","B2"],
+["crecer","to grow","wachsen","s","gewachsen",["gewachst","gewuchsen","gewächst"],"Die Firma ist in zwei Jahren stark gewachsen.","La empresa creció mucho en dos años.","The company grew strongly in two years.","B2"],
+["pasar (el tiempo)","to pass (time)","vergehen","s","vergangen",["gevergangen","vergeht","vergingen"],"Die Zeit ist sehr schnell vergangen.","El tiempo pasó muy rápido.","Time went by very fast.","B2"],
+["fracasar","to fail","scheitern","s","gescheitert",["gescheiten","gescheitet","scheitert"],"Das Projekt ist an der Finanzierung gescheitert.","El proyecto fracasó por la financiación.","The project failed because of the funding.","B2"],
+["cancelarse (una clase, un tren)","to be cancelled","ausfallen","s","ausgefallen",["geausfallen","ausgefallt","ausgefielen"],"Der Deutschkurs ist heute ausgefallen.","Hoy se canceló el curso de alemán.","The German class was cancelled today.","B2"],
+["aumentar","to increase","zunehmen","h","zugenommen",["gezunehmen","zugenehmt","zugenommt"],"Die Zahl der Bewerber hat stark zugenommen.","El número de postulantes aumentó mucho.","The number of applicants has risen sharply.","B2"],
+["decidir (hacer algo)","to resolve (to do something)","beschließen","h","beschlossen",["gebeschlossen","beschließt","beschlaßen"],"Wir haben beschlossen, nach Hamburg zu ziehen.","Decidimos mudarnos a Hamburgo.","We decided to move to Hamburg.","B2"],
+["recomendar","to recommend","empfehlen","h","empfohlen",["geempfehlt","empfahlen","empfehlt"],"Mein Lehrer hat mir dieses Buch empfohlen.","Mi profesor me recomendó este libro.","My teacher recommended this book to me.","B2"],
+["ganar","to win","gewinnen","h","gewonnen",["gegewinnt","gewannen","gewinnt"],"Unser Team hat das Turnier gewonnen.","Nuestro equipo ganó el torneo.","Our team won the tournament.","B2"],
+["evitar","to avoid","vermeiden","h","vermieden",["gevermieden","vermeidet","vermiedet"],"Diesmal habe ich den Fehler vermieden.","Esta vez evité el error.","This time I avoided the mistake.","B2"],
+["firmar","to sign","unterschreiben","h","unterschrieben",["untergeschrieben","geunterschrieben","unterschreibt"],"Ich habe den Arbeitsvertrag unterschrieben.","Firmé el contrato de trabajo.","I signed the employment contract.","B2"],
+["traducir","to translate","übersetzen","h","übersetzt",["geübersetzt","übersetzen","übersetzte"],"Sie hat den Text ins Deutsche übersetzt.","Ella tradujo el texto al alemán.","She translated the text into German.","B2"],
+["alcanzar / lograr (una meta)","to reach / achieve","erreichen","h","erreicht",["geerreicht","erreichen","erracht"],"Wir haben unser Quartalsziel erreicht.","Alcanzamos nuestra meta trimestral.","We reached our quarterly target.","B2"],
+["prestar","to lend","leihen","h","geliehen",["geleiht","geliehnt","gelieht"],"Er hat mir sein Fahrrad geliehen.","Me prestó su bicicleta.","He lent me his bike.","B2"],
+["cerrar","to close","schließen","h","geschlossen",["geschließt","geschlassen","geschlosst"],"Hast du das Fenster geschlossen?","¿Cerraste la ventana?","Did you close the window?","B2"],
+["pedir (un favor)","to ask (for a favor)","bitten","h","gebeten",["gebittet","gebaten","gebitten"],"Ich habe meinen Kollegen um Hilfe gebeten.","Le pedí ayuda a mi colega.","I asked my colleague for help.","B2"],
+["pasar (tiempo en un lugar)","to spend (time)","verbringen","h","verbracht",["geverbracht","verbringt","verbrungen"],"Wir haben den Sommer in Spanien verbracht.","Pasamos el verano en España.","We spent the summer in Spain.","B2"],
+["enterarse","to find out","erfahren","h","erfahren",["geerfahren","erfahrt","erfuhren"],"Das habe ich erst gestern erfahren.","Me enteré apenas ayer.","I only found out yesterday.","B2"],
+["proponer","to suggest","vorschlagen","h","vorgeschlagen",["gevorschlagen","vorgeschlagt","vorschlug"],"Sie hat einen neuen Termin vorgeschlagen.","Ella propuso una nueva fecha.","She suggested a new date.","B2"],
+["tener lugar / realizarse","to take place","stattfinden","h","stattgefunden",["gestattfunden","stattgefindet","stattgefinden"],"Das Meeting hat online stattgefunden.","La reunión se realizó en línea.","The meeting took place online.","B2"],
+["decidirse","to decide","sich entscheiden","h","entschieden",["geentschieden","entscheidet","entschiedet"],"Wir haben uns für die günstigere Wohnung entschieden.","Nos decidimos por el apartamento más barato.","We decided on the cheaper apartment.","B2"]
+];
+const PERF_START = ["gehen|s|gegangen","kommen|s|gekommen","fahren|s|gefahren","bleiben|s|geblieben","aufstehen|s|aufgestanden",
+  "machen|h|gemacht","essen|h|gegessen","schreiben|h|geschrieben","sehen|h|gesehen","fahren|h|gefahren"];
+
+/* ======================= HELPERS ======================= */
+const shuffle = a => { a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];} return a; };
+const uniq = a => [...new Set(a)];
+function markWords(text,forms){
+  return text.replace(new RegExp(`(^|[^\\p{L}])(${forms.join("|")})(?=[^\\p{L}]|$)`,"iu"),(m,a,b)=>`${a}<mark>${b}</mark>`);
+}
 const PREPS = ["an","auf","über","um","für","mit","von","vor","nach","zu","bei","aus","in","gegen"];
 const CONTR = {an:["an","am","ans"],von:["von","vom"],zu:["zu","zum","zur"],bei:["bei","beim"],in:["in","ins","im"]};
-const DECKS = {set:"Mi set",b1:"B1",b2:"B2",all:"Todo B1–B2"};
-const SOURCES = {b1:"B1",b2:"B2",all:"Todo"};
-const TIERS = [0,3,6,10,15,21,28];                 // racha mínima para x1..x7
-const TIER_COLORS = ["#f6ead7","#3ddc84","#3d8cff","#b26bff","#ff4fa3","#ffc531","#ff7a1a"];
-const CASE_NAME = {A:"Akkusativ",D:"Dativ"};
+const AUXF = {h:"hat",s:"ist"};
+const AUXFORMS = {h:["habe","hast","hat","haben","habt"],s:["bin","bist","ist","sind","seid"]};
 
-/* ======================= STATE ======================= */
-let S = {screen:"home",mode:1,deck:"set",sound:true,set:MINE.slice(),setSize:10,setSrc:"all",li:0,lf:false,lview:"cards"};
-let rec = {};
-try{
-  rec = JSON.parse(localStorage.getItem("praepo-trio-rec")||"{}");
-  const sp=localStorage.getItem("praepo-trio-sound"); if(sp!==null) S.sound = sp==="1";
-  const ss=JSON.parse(localStorage.getItem("praepo-trio-set")||"null");
-  if(ss && Array.isArray(ss.keys)){ const ks=ss.keys.filter(k=>BYKEY[k]); if(ks.length) S.set=ks; if(ss.size) S.setSize=ss.size; if(ss.src) S.setSrc=ss.src; }
-}catch(e){}
-const recKey = ()=> S.mode+"-"+S.deck;
-const getRec = ()=> rec[recKey()] || {score:0,streak:0};
-function saveRec(){ try{ localStorage.setItem("praepo-trio-rec",JSON.stringify(rec)); }catch(e){} }
-function saveSet(){ try{ localStorage.setItem("praepo-trio-set",JSON.stringify({keys:S.set,size:S.setSize,src:S.setSrc})); }catch(e){} }
-const setVerbs = ()=> S.set.map(k=>BYKEY[k]).filter(Boolean);
+/* ======================= ENGINE: TOPICS (moldes) =======================
+   Cada modo es un "molde" con los mismos campos:
+   a = respuesta del slot con fichas, b = respuesta del slot con dos botones */
+const PREP_ITEMS = PREP_RAW.map((r,i)=>({k:r[1]+"|"+r[2]+"|"+r[3],es:r[0],en:PREP_EN[i][0],de:r[1],a:r[2],b:r[3],ex:r[4],tr:{es:r[5],en:PREP_EN[i][1]},lv:r[6]}));
+const PERF_ITEMS = PERF_RAW.map(r=>({k:r[2]+"|"+r[3]+"|"+r[4],es:r[0],en:r[1],de:r[2],b:r[3],a:r[4],dis:r[5],ex:r[6],tr:{es:r[7],en:r[8]},lv:r[9]}));
 
-const deckList = d => d==="set" ? setVerbs() : V.filter(v=> d==="all" || (d==="b1"&&(v.lv==="M"||v.lv==="B1")) || (d==="b2"&&v.lv==="B2"));
-function newSet(){
-  const pool=deckList(S.setSrc), n=Math.min(S.setSize,pool.length);
-  const fresh=pool.filter(v=>!S.set.includes(v.k));
-  const base = fresh.length>=n ? fresh : pool;           // prioriza verbos que no estaban en el set anterior
-  S.set = shuffle(base).slice(0,n).map(v=>v.k);
-  S.li=0; S.lf=false; saveSet();
+function badge(T,val){ const o=T.B.opts[val]; return `<span class="badge ${o.cls}"><span class="shape"></span>${o.short}</span>`; }
+
+const TOPICS = {
+  prep:{
+    n:1, name:"Präpositionen", items:PREP_ITEMS, start:PREP_ITEMS.filter(v=>v.lv==="M").map(v=>v.k), hasMine:true,
+    sub:{es:"Verbo + preposición + caso",en:"Verb + preposition + case"},
+    desc:{es:"Primero repasa tu set en Aprender. Después juega: lee el verbo en español y arma el trío preposición + caso. Al acertar se revela la tarjeta en alemán.",
+          en:"Study your set in Learn first. Then play: read the verb in English and build the trio preposition + case. Get it right and the German card is revealed."},
+    levels:{1:{es:["Conectores","Eliges preposición + caso. El verbo alemán se revela."],en:["Connectors","Pick preposition + case. The German verb is revealed."]},
+            2:{es:["Trío completo","Eliges verbo alemán + preposición + caso. 150 pts base."],en:["Full trio","Pick German verb + preposition + case. 150 base points."]}},
+    lvLbl:{B1:"B1",B2:"B2"}, allLbl:{es:"Todo B1–B2",en:"All B1–B2"},
+    legend:{es:["rombo azul","círculo amarillo"],en:["blue diamond","yellow circle"]},
+    order:["a","b"],
+    A:{slot:"PRÄP.",pool:"PRÄPOSITION",grid:"g3",tile:"tile",wide:false},
+    B:{slot:"KASUS",pool:"KASUS",opts:{A:{long:"Akkusativ",short:"Akk",cls:"akk"},D:{long:"Dativ",short:"Dat",cls:"dat"}}},
+    poolA(v){ return shuffle([v.a,...shuffle(PREPS.filter(p=>p!==v.a)).slice(0,5)]); },
+    deLine(v){ return `${v.de} <span class="pp">${v.a}</span> ${badge(this,v.b)}`; },
+    listDe(v){ return `${v.de} <b>${v.a}</b> ${badge(this,v.b)}`; },
+    plain(v){ return `${v.de} ${v.a} + ${this.B.opts[v.b].short}`; },
+    pickPlain(p){ return `${p.a} + ${this.B.opts[p.b].short}`; },
+    mark(v){ return markWords(v.ex,CONTR[v.a]||[v.a]); },
+    say(v){ return `${v.de} ${v.a}. ${v.ex}`; }
+  },
+  perf:{
+    n:2, name:"Perfekt", items:PERF_ITEMS, start:PERF_START, hasMine:false,
+    sub:{es:"haben o sein + Partizip II",en:"haben or sein + Partizip II"},
+    desc:{es:"Primero repasa tu set en Aprender. Después juega: lee el verbo en español y arma su Perfekt con haben o sein + Partizip II. Al acertar se revela la tarjeta con una frase de ejemplo.",
+          en:"Study your set in Learn first. Then play: read the verb in English and build its Perfekt with haben or sein + Partizip II. Get it right and the card is revealed with an example sentence."},
+    levels:{1:{es:["Hilfsverb + Partizip","Eliges haben o sein y el Partizip II. El verbo alemán se revela."],en:["Hilfsverb + Partizip","Pick haben or sein and the Partizip II. The German verb is revealed."]},
+            2:{es:["Trío completo","Eliges verbo alemán + haben o sein + Partizip II. 150 pts base."],en:["Full trio","Pick German verb + haben or sein + Partizip II. 150 base points."]}},
+    lvLbl:{B1:"A2–B1",B2:"B2"}, allLbl:{es:"Todo",en:"All"},
+    legend:{es:["haben · rombo azul","sein · círculo amarillo"],en:["haben · blue diamond","sein · yellow circle"]},
+    order:["b","a"],
+    A:{slot:"PARTIZIP II",pool:"PARTIZIP II",grid:"g2",tile:"tile vb",wide:true},
+    B:{slot:"HILFSVERB",pool:"HILFSVERB",opts:{h:{long:"haben",short:"hat",cls:"akk"},s:{long:"sein",short:"ist",cls:"dat"}}},
+    poolA(v){
+      const own=shuffle(v.dis).slice(0,2);
+      const others=shuffle(uniq(PERF_ITEMS.map(x=>x.a)).filter(p=>p!==v.a&&!own.includes(p)));
+      return shuffle([v.a,...own,...others].slice(0,4));
+    },
+    deLine(v){ return `${v.de} <span class="arrow">→</span> ${badge(this,v.b)} <span class="pp">${v.a}</span>`; },
+    listDe(v){ return `${v.de} → ${badge(this,v.b)} <b>${v.a}</b>`; },
+    plain(v){ return `${v.de}: ${AUXF[v.b]} ${v.a}`; },
+    pickPlain(p){ return `${this.B.opts[p.b].short} ${p.a}`; },
+    mark(v){ return markWords(markWords(v.ex,[v.a]),AUXFORMS[v.b]); },
+    say(v){ return `${v.de}. ${AUXF[v.b]} ${v.a}. ${v.ex}`; }
+  }
+};
+Object.values(TOPICS).forEach(T=>{ T.by=Object.fromEntries(T.items.map(v=>[v.k,v])); });
+
+/* ======================= TEXTOS ES / EN ======================= */
+const STR = {
+ es:{pickSub:"Juego para memorizar verbos en alemán. Elige qué quieres practicar.",pickHead:"MODO",verbs:"verbos",changeMode:"Cambiar modo",modeLbl:"MODO",
+  learnBtn:"Aprender · Mi set",learnSub:"Repasa las tarjetas o arma un set nuevo de 10, 20 o 30 verbos al azar.",reviewShort:"repaso",
+  level:"NIVEL",deck:"MAZO",multHead:"MULTIPLICADOR POR RACHA · UN ERROR LO REINICIA",start:"inicio",inRow:"seguidas",record:"RÉCORD",bestStreak:"MEJOR RACHA",
+  play:"Jugar · 3 vidas",points:"PUNTOS",streak:"Racha",maxMult:"Multiplicador máximo",moreFor:(n,m)=>`${n} más para <b>×${m}</b>`,
+  srcLang:"ESPAÑOL",verb:"VERBO",germanVerb:"VERBO ALEMÁN",correct:"¡Correcto!",unstoppable:"¡Imparable!",almost:"Casi",yourTrio:"Tu trío:",
+  fast:"⚡ Respuesta rápida: +50",next:"Siguiente",seeResult:"Ver resultado",roundOver:"Fin de la ronda",newRecord:"NUEVO RÉCORD",recordLbl:"Récord:",
+  newTag:"NUEVA",hits:"ACIERTOS",toReview:"PARA REPASAR",menu:"Menú",learn:"Aprender",again:"Otra ronda",learnHead:"APRENDER",
+  mySet:"Mi set",myCards:"Mis tarjetas",changeSet:"Cambiar set · 10, 20 o 30 verbos",amount:"CANTIDAD",randomFrom:"ELEGIDOS AL AZAR DE",
+  my10:"Mis 10 tarjetas",newSet:"Nuevo set",cards:"Tarjetas",list:"Lista",playSet:"Jugar con este set",flipHint:"Toca para voltear · desliza para avanzar",
+  listen:"🔈 Escuchar",review:"REPASO",reviewToday:n=>`Para repasar hoy: ${n} ${n===1?"verbo":"verbos"} de sets anteriores. Entran solos cuando juegas con Mi set.`,
+  newSetToast:n=>`Set nuevo: ${n} verbos`,mineToast:"Set: mis 10 tarjetas",all:"Todo",sound:"Sonido",flip:"Voltear tarjeta",prev:"Anterior",nextCard:"Siguiente"},
+ en:{pickSub:"A game to memorize German verbs. Choose what you want to practice.",pickHead:"MODE",verbs:"verbs",changeMode:"Change mode",modeLbl:"MODE",
+  learnBtn:"Learn · My set",learnSub:"Review the cards or build a new random set of 10, 20 or 30 verbs.",reviewShort:"review",
+  level:"LEVEL",deck:"DECK",multHead:"STREAK MULTIPLIER · ONE MISTAKE RESETS IT",start:"start",inRow:"in a row",record:"BEST SCORE",bestStreak:"BEST STREAK",
+  play:"Play · 3 lives",points:"POINTS",streak:"Streak",maxMult:"Maximum multiplier",moreFor:(n,m)=>`${n} more for <b>×${m}</b>`,
+  srcLang:"ENGLISH",verb:"VERB",germanVerb:"GERMAN VERB",correct:"Correct!",unstoppable:"Unstoppable!",almost:"Not quite",yourTrio:"Your trio:",
+  fast:"⚡ Fast answer: +50",next:"Next",seeResult:"See result",roundOver:"Round over",newRecord:"NEW BEST",recordLbl:"Best:",
+  newTag:"NEW",hits:"CORRECT",toReview:"TO REVIEW",menu:"Menu",learn:"Learn",again:"Play again",learnHead:"LEARN",
+  mySet:"My set",myCards:"My cards",changeSet:"Change set · 10, 20 or 30 verbs",amount:"AMOUNT",randomFrom:"RANDOMLY PICKED FROM",
+  my10:"My 10 cards",newSet:"New set",cards:"Cards",list:"List",playSet:"Play with this set",flipHint:"Tap to flip · swipe to move on",
+  listen:"🔈 Listen",review:"REVIEW",reviewToday:n=>`Due for review today: ${n} ${n===1?"verb":"verbs"} from earlier sets. They join automatically when you play My set.`,
+  newSetToast:n=>`New set: ${n} verbs`,mineToast:"Set: my 10 cards",all:"All",sound:"Sound",flip:"Flip card",prev:"Previous",nextCard:"Next"}
+};
+
+/* ======================= STATE & STORAGE ======================= */
+const LS = {
+  get(k,d){ try{ const v=localStorage.getItem(k); return v===null?d:JSON.parse(v); }catch(e){ return d; } },
+  set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+};
+let S = {v:2,screen:"topics",topic:"prep",level:1,deck:"set",sound:true,lang:"es",sets:{},li:0,lf:false,lview:"cards"};
+S.sound = String(LS.get("praepo-trio-sound","1"))!=="0";
+S.lang = LS.get("praepo-trio-lang","es")==="en"?"en":"es";
+const t = (k,...a)=>{ const s=STR[S.lang][k]; return typeof s==="function"?s(...a):s; };
+const tx = o => o[S.lang]||o.es;
+const mean = v => v[S.lang]||v.es;
+const TP = () => TOPICS[S.topic];
+
+/* sets por modo (migra el set guardado de la versión anterior) */
+S.sets = LS.get("praepo-trio-sets",null) || {};
+if(!S.sets.prep){ const old=LS.get("praepo-trio-set",null); if(old && Array.isArray(old.keys)) S.sets.prep={keys:old.keys,size:old.size||10,src:old.src||"all"}; }
+Object.keys(TOPICS).forEach(tp=>{
+  const T=TOPICS[tp], s=S.sets[tp];
+  const keys = s && Array.isArray(s.keys) ? s.keys.filter(k=>T.by[k]) : [];
+  S.sets[tp] = keys.length ? {keys,size:s.size||10,src:s.src||"all"} : {keys:T.start.slice(),size:10,src:"all"};
+});
+function saveSets(){ LS.set("praepo-trio-sets",S.sets); }
+
+/* récords por modo-nivel-mazo (migra "1-mine" → "prep-1-set") */
+let rec = LS.get("praepo-trio-rec",{}) || {};
+Object.keys(rec).forEach(k=>{
+  const m=k.match(/^([12])-(\w+)$/); if(!m) return;
+  const nk=`prep-${m[1]}-${m[2]==="mine"?"set":m[2]}`, o=rec[nk]||{score:0,streak:0};
+  rec[nk]={score:Math.max(o.score,rec[k].score||0),streak:Math.max(o.streak,rec[k].streak||0)}; delete rec[k];
+});
+LS.set("praepo-trio-rec",rec);
+const recKey = () => `${S.topic}-${S.level}-${S.deck}`;
+const getRec = () => rec[recKey()] || {score:0,streak:0};
+
+/* repaso espaciado: cajas 1–5 con intervalos de 1, 2, 4, 8 y 16 días */
+const DAY=864e5, INT=[0,1,2,4,8,16];
+let SRS = LS.get("praepo-trio-srs",null);
+if(!SRS){
+  SRS={prep:{},perf:{}};
+  const ps=S.sets.prep.keys, mine=TOPICS.prep.start;
+  if(!(ps.length===mine.length && ps.every(k=>mine.includes(k)))) mine.forEach(k=>SRS.prep[k]={b:1,d:Date.now()});
+  LS.set("praepo-trio-srs",SRS);
 }
-function toast(t){ const el=document.createElement("div"); el.className="toast"; el.textContent=t; document.body.appendChild(el); setTimeout(()=>el.remove(),2300); }
-const shuffle = a => { a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];} return a; };
-const tierOf = s => { let t=0; TIERS.forEach((m,i)=>{ if(s>=m) t=i; }); return t; };
+SRS.prep=SRS.prep||{}; SRS.perf=SRS.perf||{};
+function srsUpdate(tp,k,ok){
+  const s=SRS[tp][k]||{b:0,d:0};
+  if(ok){ s.b=Math.min(s.b+1,5); s.d=Date.now()+INT[s.b]*DAY; } else { s.b=1; s.d=Date.now(); }
+  SRS[tp][k]=s; LS.set("praepo-trio-srs",SRS);
+}
+function dueReviews(tp){
+  const inSet=new Set(S.sets[tp].keys), now=Date.now();
+  return TOPICS[tp].items.filter(v=>{ const s=SRS[tp][v.k]; return s && s.b>=1 && s.d<=now && !inSet.has(v.k); });
+}
+
+/* event log local (solo en este dispositivo; base para la analítica del Sprint 2) */
+let LOG = LS.get("praepo-trio-log",[]); if(!Array.isArray(LOG)) LOG=[];
+function logEv(ev,x={}){
+  LOG.push(Object.assign({t:Date.now(),sid:S.sid||null,ev,tp:S.topic,lv:S.level,dk:S.deck,lang:S.lang},x));
+  if(LOG.length>3000) LOG=LOG.slice(-3000);
+  LS.set("praepo-trio-log",LOG);
+}
+
+const deckList = (d,tp=S.topic) => d==="set"
+  ? S.sets[tp].keys.map(k=>TOPICS[tp].by[k]).filter(Boolean)
+  : TOPICS[tp].items.filter(v=> d==="all" || (d==="b1"&&(v.lv==="M"||v.lv==="B1")) || (d==="b2"&&v.lv==="B2"));
+const deckLabel = (d,T=TP()) => d==="set" ? t("mySet") : d==="all" ? tx(T.allLbl) : T.lvLbl[d.toUpperCase()];
+const lvTag = (T,v) => v.lv==="M" ? t("myCards").toUpperCase() : T.lvLbl[v.lv];
+const isMineSet = () => { const k=S.sets.prep.keys, m=TOPICS.prep.start; return S.topic==="prep" && k.length===m.length && k.every(x=>m.includes(x)); };
+
+function newSet(){
+  const st=S.sets[S.topic], pool=deckList(st.src), n=Math.min(st.size,pool.length);
+  const fresh=pool.filter(v=>!st.keys.includes(v.k));
+  st.keys = shuffle(fresh.length>=n?fresh:pool).slice(0,n).map(v=>v.k);
+  S.li=0; S.lf=false; saveSets();
+}
+function toast(msg){ const el=document.createElement("div"); el.className="toast"; el.textContent=msg; document.body.appendChild(el); setTimeout(()=>el.remove(),2300); }
+
+const TIERS = [0,3,6,10,15,21,28];
+const TIER_COLORS = ["#f6ead7","#3ddc84","#3d8cff","#b26bff","#ff4fa3","#ffc531","#ff7a1a"];
+const tierOf = s => { let r=0; TIERS.forEach((m,i)=>{ if(s>=m) r=i; }); return r; };
 const multOf = s => tierOf(s)+1;
 
 /* ======================= AUDIO ======================= */
@@ -408,10 +767,10 @@ let AC=null;
 function ac(){ if(!S.sound) return null; try{ if(!AC) AC=new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==="suspended") AC.resume(); }catch(e){ return null; } return AC; }
 function tone(f,dur,{type="sine",vol=.14,at=0,to=null}={}){
   const a=ac(); if(!a) return;
-  const t=a.currentTime+at, o=a.createOscillator(), g=a.createGain();
-  o.type=type; o.frequency.setValueAtTime(f,t); if(to) o.frequency.exponentialRampToValueAtTime(to,t+dur);
-  g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(vol,t+.01); g.gain.exponentialRampToValueAtTime(.0001,t+dur);
-  o.connect(g).connect(a.destination); o.start(t); o.stop(t+dur+.02);
+  const tt=a.currentTime+at, o=a.createOscillator(), g=a.createGain();
+  o.type=type; o.frequency.setValueAtTime(f,tt); if(to) o.frequency.exponentialRampToValueAtTime(to,tt+dur);
+  g.gain.setValueAtTime(0,tt); g.gain.linearRampToValueAtTime(vol,tt+.01); g.gain.exponentialRampToValueAtTime(.0001,tt+dur);
+  o.connect(g).connect(a.destination); o.start(tt); o.stop(tt+dur+.02);
 }
 const st = (base,n)=> base*Math.pow(2,n/12);
 const sfx = {
@@ -448,35 +807,45 @@ function tick(){
 
 /* ======================= GAME FLOW ======================= */
 const app=document.getElementById("app"), sheet=document.getElementById("sheet");
+const cur = () => TP().by[S.cur];
 
 function startGame(){
-  Object.assign(S,{screen:"play",phase:"pick",queue:[],score:0,streak:0,maxStreak:0,lives:3,hits:0,answered:0,missed:[],cur:null,last:null});
-  sfx.start(); nextTurn();
+  Object.assign(S,{screen:"play",phase:"pick",queue:[],score:0,streak:0,maxStreak:0,lives:3,hits:0,answered:0,missed:[],cur:null,last:null,reviewKeys:[],
+    sid:Date.now().toString(36)+Math.random().toString(36).slice(2,6)});
+  shown=0; logEv("session_start"); sfx.start(); nextTurn();
+}
+function refill(){
+  const base=deckList(S.deck).map(v=>v.k);
+  S.reviewKeys = S.deck==="set" ? shuffle(dueReviews(S.topic)).slice(0,Math.ceil(base.length/2)).map(v=>v.k) : [];
+  S.queue = shuffle([...base,...S.reviewKeys]);
+  if(S.queue.length>1 && S.queue[0]===S.last) S.queue.push(S.queue.shift());
 }
 function nextTurn(){
-  if(!S.queue.length){ S.queue = shuffle(deckList(S.deck).map(v=>v.i)); if(S.queue.length>1 && S.queue[0]===S.last) S.queue.push(S.queue.shift()); }
-  S.cur = S.queue.shift(); S.last=S.cur;
-  const v=V[S.cur];
-  S.pick={verb:null,prep:null,case:null};
-  S.preps = shuffle([v.p, ...shuffle(PREPS.filter(p=>p!==v.p)).slice(0,5)]);
-  const pool = shuffle([...new Set(V.map(x=>x.de))].filter(d=>d!==v.de));
-  S.verbs = S.mode===2 ? shuffle([v.de, ...pool.slice(0,3)]) : [];
+  if(!S.queue.length) refill();
+  S.cur=S.queue.shift(); S.last=S.cur;
+  const T=TP(), v=cur();
+  S.pick={verb:null,a:null,b:null};
+  S.poolA=T.poolA(v);
+  S.verbs = S.level===2 ? shuffle([v.de,...shuffle(uniq(T.items.map(x=>x.de)).filter(d=>d!==v.de)).slice(0,3)]) : [];
   S.phase="pick"; S.t0=Date.now();
   sheet.hidden=true; render();
 }
-function complete(){ return S.pick.prep && S.pick.case && (S.mode===1 || S.pick.verb); }
+const complete = () => S.pick.a && S.pick.b && (S.level===1 || S.pick.verb);
 
 function check(){
-  const v=V[S.cur], ok = S.pick.prep===v.p && S.pick.case===v.c && (S.mode===1 || S.pick.verb===v.de);
+  const v=cur(), p=S.pick, ms=Date.now()-S.t0;
+  const ok = p.a===v.a && p.b===v.b && (S.level===1 || p.verb===v.de);
   S.phase="reveal"; S.answered++;
+  srsUpdate(S.topic,v.k,ok);
+  logEv("answer",{k:v.k,ok,ms,pa:p.a,pb:p.b,pv:p.verb,rv:S.reviewKeys.includes(v.k),streak:ok?S.streak+1:0});
   const card=document.querySelector(".es-card"), r=card?card.getBoundingClientRect():{left:innerWidth/2,top:200,width:0,height:0};
   let pts=0, levelUp=false, fast=false;
   if(ok){
     const before=multOf(S.streak);
     S.streak++; S.hits++; S.maxStreak=Math.max(S.maxStreak,S.streak);
     const m=multOf(S.streak); levelUp = m>before;
-    fast = Date.now()-S.t0 < 6000;
-    pts = (S.mode===1?100:150)*m + (fast?50:0);
+    fast = ms < 6000;
+    pts = (S.level===1?100:150)*m + (fast?50:0);
     S.score+=pts;
     sfx.correct(S.streak); buzz(20);
     burst(r.left+r.width/2, r.top+r.height/2, 40+S.streak*4, ["#f2573f","#f6ead7","#3d8cff","#ffc531",TIER_COLORS[m-1]]);
@@ -484,7 +853,7 @@ function check(){
   } else {
     S.streak=0; S.lives--;
     if(!S.missed.includes(S.cur)) S.missed.push(S.cur);
-    S.queue.splice(Math.min(3,S.queue.length),0,S.cur);   // vuelve pronto
+    S.queue.splice(Math.min(3,S.queue.length),0,S.cur);
     sfx.wrong(); buzz([60,40,60]);
     card && (card.classList.remove("shake"), void card.offsetWidth, card.classList.add("shake"));
   }
@@ -493,155 +862,170 @@ function check(){
 }
 function floatBig(m){
   const el=document.createElement("div"); el.className="float big"; el.style.setProperty("--tier",TIER_COLORS[m-1]);
-  el.innerHTML=`×${m}<small>RACHA ${S.streak}</small>`; document.body.appendChild(el); setTimeout(()=>el.remove(),1200);
+  el.innerHTML=`×${m}<small>${t("streak").toUpperCase()} ${S.streak}</small>`; document.body.appendChild(el); setTimeout(()=>el.remove(),1200);
 }
-
-function afterSheet(){
-  if(S.lives<=0){ endGame(); } else nextTurn();
+function afterSheet(){ if(S.lives<=0) endGame("lives"); else nextTurn(); }
+function endSession(reason){
+  if(S.screen==="play" && S.sid){ logEv("session_end",{reason,score:S.score,maxStreak:S.maxStreak,answered:S.answered,hits:S.hits}); S.sid=null; }
 }
-function endGame(){
+function endGame(reason){
+  endSession(reason);
   const r=getRec(); S.newRec = S.score>r.score; S.newStreak = S.maxStreak>r.streak;
-  rec[recKey()]={score:Math.max(r.score,S.score),streak:Math.max(r.streak,S.maxStreak)}; saveRec();
+  rec[recKey()]={score:Math.max(r.score,S.score),streak:Math.max(r.streak,S.maxStreak)}; LS.set("praepo-trio-rec",rec);
   S.screen="over"; sheet.hidden=true; sfx.over(); render();
   if(S.newRec) setTimeout(()=>{ sfx.level(); burst(innerWidth/2,innerHeight*.3,160,TIER_COLORS); },500);
 }
 
 /* ======================= RENDER ======================= */
-const caseBadge = c => `<span class="badge ${c==="A"?"akk":"dat"}"><span class="shape"></span>${c==="A"?"Akk":"Dat"}</span>`;
-function markPrep(ex,p){
-  const forms=(CONTR[p]||[p]).join("|");
-  return ex.replace(new RegExp(`(^|[^\\p{L}])(${forms})(?=[^\\p{L}]|$)`,"iu"),(m,a,b)=>`${a}<mark>${b}</mark>`);
-}
-
 function render(){
-  if(S.screen==="home") renderHome();
+  document.documentElement.lang = S.lang;
+  if(S.screen==="topics") renderTopics();
+  else if(S.screen==="home") renderHome();
   else if(S.screen==="learn") renderLearn();
   else if(S.screen==="play") renderPlay();
   else renderOver();
 }
+const langSeg = () => `<div class="seg lang" role="group" aria-label="Language"><button class="${S.lang==="es"?"on":""}" data-act="lang" data-v="es">ES</button><button class="${S.lang==="en"?"on":""}" data-act="lang" data-v="en">EN</button></div>`;
+const soundBtn = () => `<button class="iconbtn" data-act="sound" aria-label="${t("sound")}">${S.sound?"🔊":"🔇"}</button>`;
+const logo = `<div class="logo"><div class="c c1">es</div><div class="c c2">auf</div><div class="c3"></div></div>`;
+
+function renderTopics(){
+  app.innerHTML=`
+  <div class="home">
+    <div class="hud" style="padding:0">${logo}<div class="topright">${langSeg()}${soundBtn()}</div></div>
+    <div><h1>Präpo Trío</h1></div>
+    <p>${t("pickSub")}</p>
+    <div>
+      <div class="sec-h">${t("pickHead")}</div>
+      <div class="modes">${Object.entries(TOPICS).map(([tp,T])=>`
+        <button class="mode big" data-act="topic" data-v="${tp}"><span class="n">${T.n}</span>
+          <span><b>${T.name}</b><span>${tx(T.sub)} · ${T.items.length} ${t("verbs")}</span></span></button>`).join("")}
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderHome(){
+  const T=TP(), r=getRec(), due=dueReviews(S.topic).length, setN=S.sets[S.topic].keys.length;
+  const counts={set:setN,b1:deckList("b1").length,b2:deckList("b2").length,all:T.items.length};
+  const leg=tx(T.legend), ok=Object.keys(T.B.opts);
+  app.innerHTML=`
+  <div class="home">
+    <div class="hud" style="padding:0">${logo}<div class="topright">${langSeg()}${soundBtn()}</div></div>
+    <div><h1>Präpo Trío</h1></div>
+    <div class="modebar"><span class="sec-h">${t("modeLbl")} ${T.n} · ${T.name.toUpperCase()}</span><button class="back" data-act="topics">${t("changeMode")}</button></div>
+    <p>${tx(T.desc)}</p>
+    <div class="legend"><span>${badge(T,ok[0])} ${leg[0]}</span><span>${badge(T,ok[1])} ${leg[1]}</span></div>
+    <button class="mode" data-act="learn"><span class="n">✎</span><span><b>${t("learnBtn")} (${setN})${due?` · +${due} ${t("reviewShort")}`:""}</b><span>${t("learnSub")}</span></span></button>
+    <div>
+      <div class="sec-h">${t("level")}</div>
+      <div class="modes">${[1,2].map(l=>{const [h,s]=tx(T.levels[l]);return `
+        <button class="mode ${S.level===l?"on":""}" data-act="level" data-v="${l}"><span class="n">${l}</span><span><b>${h}</b><span>${s}</span></span></button>`}).join("")}
+      </div>
+    </div>
+    <div>
+      <div class="sec-h">${t("deck")}</div>
+      <div class="decks">${["set","b1","b2","all"].map(k=>`<button class="chip ${S.deck===k?"on":""}" data-act="deck" data-v="${k}">${deckLabel(k)}<i>${counts[k]}${k==="set"&&due?` +${due}`:""}</i></button>`).join("")}</div>
+    </div>
+    <div>
+      <div class="sec-h">${t("multHead")}</div>
+      <div class="ladder">${TIERS.map((x,i)=>`<span class="rung" style="background:${TIER_COLORS[i]}">×${i+1} <span>${x===0?t("start"):x+" "+t("inRow")}</span></span>`).join("")}</div>
+    </div>
+    <div class="rec"><div><small>${t("record")}</small><b>${r.score.toLocaleString("de-DE")}</b></div><div><small>${t("bestStreak")}</small><b>${r.streak}</b></div></div>
+    <button class="cta go" data-act="play">${t("play")}</button>
+  </div>`;
+}
 
 function renderLearn(){
-  const n=S.set.length, isMine = S.set.length===MINE.length && S.set.every(k=>MINE.includes(k));
+  const T=TP(), st=S.sets[S.topic], n=st.keys.length, due=dueReviews(S.topic).length;
   app.innerHTML=`
   <div class="learn">
     <div class="hud">
-      <div class="score"><small>APRENDER</small>${isMine?"Mis tarjetas":"Mi set"} · ${n}</div>
-      <button class="iconbtn" style="margin-left:auto" data-act="menu" aria-label="Menú">✕</button>
+      <div class="score"><small>${t("learnHead")} · ${T.name.toUpperCase()}</small>${isMineSet()?t("myCards"):t("mySet")} · ${n}</div>
+      <button class="iconbtn" style="margin-left:auto" data-act="menu" aria-label="${t("menu")}">✕</button>
     </div>
+    ${due?`<div class="reviewnote">${t("reviewToday",due)}</div>`:""}
     <details class="builder">
-      <summary>Cambiar set · 10, 20 o 30 verbos</summary>
+      <summary>${t("changeSet")}</summary>
       <div class="builder-body">
-        <div><div class="sec-h">CANTIDAD</div><div class="decks">${[10,20,30].map(x=>`<button class="chip ${S.setSize===x?"on":""}" data-act="size" data-v="${x}">${x}</button>`).join("")}</div></div>
-        <div><div class="sec-h">ELEGIDOS AL AZAR DE</div><div class="decks">${Object.keys(SOURCES).map(k=>`<button class="chip ${S.setSrc===k?"on":""}" data-act="src" data-v="${k}">${SOURCES[k]}<i>${deckList(k).length}</i></button>`).join("")}</div></div>
-        <div class="row"><button class="ghost" data-act="mine">Mis 10 tarjetas</button><button class="cta" data-act="newset">Nuevo set</button></div>
+        <div><div class="sec-h">${t("amount")}</div><div class="decks">${[10,20,30].map(x=>`<button class="chip ${st.size===x?"on":""}" data-act="size" data-v="${x}">${x}</button>`).join("")}</div></div>
+        <div><div class="sec-h">${t("randomFrom")}</div><div class="decks">${["b1","b2","all"].map(k=>`<button class="chip ${st.src===k?"on":""}" data-act="src" data-v="${k}">${k==="all"?t("all"):T.lvLbl[k.toUpperCase()]}<i>${deckList(k).length}</i></button>`).join("")}</div></div>
+        <div class="row">${T.hasMine?`<button class="ghost" data-act="mine">${t("my10")}</button>`:""}<button class="cta" data-act="newset">${t("newSet")}</button></div>
       </div>
     </details>
     <div class="seg">
-      <button class="${S.lview==="cards"?"on":""}" data-act="view" data-v="cards">Tarjetas</button>
-      <button class="${S.lview==="list"?"on":""}" data-act="view" data-v="list">Lista</button>
+      <button class="${S.lview==="cards"?"on":""}" data-act="view" data-v="cards">${t("cards")}</button>
+      <button class="${S.lview==="list"?"on":""}" data-act="view" data-v="list">${t("list")}</button>
     </div>
     <div id="lview"></div>
-    <div class="sticky"><button class="cta go" data-act="playset">Jugar con este set · ${n}</button></div>
+    <div class="sticky"><button class="cta go" data-act="playset">${t("playSet")} · ${n}${due?` +${due}`:""}</button></div>
   </div>`;
   renderLView();
 }
 const canSpeak = "speechSynthesis" in window;
 function renderLView(){
   const box=document.getElementById("lview"); if(!box) return;
-  const set=setVerbs(); if(!set.length) return;
+  const T=TP(), set=deckList("set"); if(!set.length) return;
   if(S.lview==="list"){
-    box.innerHTML=`<div class="list">${set.map(v=>`<div class="lrow"><div class="lc es">${v.es}</div><div class="lc de">${v.de} <b>${v.p}</b> ${caseBadge(v.c)}</div></div>`).join("")}</div>`;
+    box.innerHTML=`<div class="list">${set.map(v=>`<div class="lrow"><div class="lc es">${mean(v)}</div><div class="lc de">${T.listDe(v)}</div></div>`).join("")}</div>`;
     return;
   }
   S.li=Math.max(0,Math.min(S.li,set.length-1));
   const v=set[S.li];
   box.innerHTML=`
-    <div class="flip ${S.lf?"on":""}" id="flip" data-act="flip" role="button" tabindex="0" aria-label="Voltear tarjeta">
+    <div class="flip ${S.lf?"on":""}" id="flip" data-act="flip" role="button" tabindex="0" aria-label="${t("flip")}">
       <div class="flip-in">
-        <div class="face front"><span class="tag">${v.lv==="M"?"MIS TARJETAS":v.lv}</span><div class="lbl">ESPAÑOL</div><div class="es">${v.es}</div><div class="hint">Toca para voltear · desliza para avanzar</div></div>
-        <div class="face back"><div class="lbl">DEUTSCH</div><div class="de">${v.de} <span class="pp">${v.p}</span> ${caseBadge(v.c)}</div><div class="ex">${markPrep(v.ex,v.p)}</div><div class="tr">${v.tr}</div>
-          ${canSpeak?`<button class="speak" data-act="speak">🔈 Escuchar</button>`:""}</div>
+        <div class="face front"><span class="tag">${lvTag(T,v)}</span><div class="lbl">${t("srcLang")}</div><div class="es">${mean(v)}</div><div class="hint">${t("flipHint")}</div></div>
+        <div class="face back"><div class="lbl">DEUTSCH</div><div class="de">${T.deLine(v)}</div><div class="ex">${T.mark(v)}</div><div class="tr">${v.tr[S.lang]}</div>
+          ${canSpeak?`<button class="speak" data-act="speak">${t("listen")}</button>`:""}</div>
       </div>
     </div>
     <div class="lnav" style="margin-top:14px">
-      <button class="iconbtn" data-act="lprev" aria-label="Anterior">←</button>
+      <button class="iconbtn" data-act="lprev" aria-label="${t("prev")}">←</button>
       <div class="mid"><span>${S.li+1} / ${set.length}</span><div class="track"><div class="fill" style="width:${(S.li+1)/set.length*100}%"></div></div></div>
-      <button class="iconbtn" data-act="lnext" aria-label="Siguiente">→</button>
+      <button class="iconbtn" data-act="lnext" aria-label="${t("nextCard")}">→</button>
     </div>`;
 }
 function lmove(d){
-  const n=S.set.length; if(!n) return;
+  const n=S.sets[S.topic].keys.length; if(!n) return;
   S.li=(S.li+d+n)%n; S.lf=false; sfx.select(d>0?4:0); renderLView();
 }
 function speak(v){
-  try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(`${v.de} ${v.p}. ${v.ex}`); u.lang="de-DE"; u.rate=.9; speechSynthesis.speak(u); }catch(e){}
-}
-
-function renderHome(){
-  const r=getRec();
-  const counts={set:S.set.length,b1:deckList("b1").length,b2:deckList("b2").length,all:V.length};
-  app.innerHTML=`
-  <div class="home">
-    <div class="hud" style="padding:0"><div class="logo"><div class="c c1">es</div><div class="c c2">auf</div><div class="c3"></div></div>
-      <button class="iconbtn" style="margin-left:auto" data-act="sound" aria-label="Sonido">${S.sound?"🔊":"🔇"}</button></div>
-    <div><h1>Präpo Trío</h1></div>
-    <p>Primero repasa tu set en Aprender. Después juega: lee el verbo en español y arma el trío preposición + caso. Al acertar se revela la tarjeta en alemán.</p>
-    <div class="legend"><span>${caseBadge("A")} rombo azul</span><span>${caseBadge("D")} círculo amarillo</span></div>
-    <button class="mode" data-act="learn"><span class="n">✎</span><span><b>Aprender · Mi set (${S.set.length})</b><span>Repasa las tarjetas o arma un set nuevo de 10, 20 o 30 verbos al azar.</span></span></button>
-    <div>
-      <div class="sec-h">NIVEL</div>
-      <div class="modes">
-        <button class="mode ${S.mode===1?"on":""}" data-act="mode" data-v="1"><span class="n">1</span><span><b>Conectores</b><span>Eliges preposición + caso. El verbo alemán se revela.</span></span></button>
-        <button class="mode ${S.mode===2?"on":""}" data-act="mode" data-v="2"><span class="n">2</span><span><b>Trío completo</b><span>Eliges verbo alemán + preposición + caso. 150 pts base.</span></span></button>
-      </div>
-    </div>
-    <div>
-      <div class="sec-h">MAZO</div>
-      <div class="decks">${Object.keys(DECKS).map(k=>`<button class="chip ${S.deck===k?"on":""}" data-act="deck" data-v="${k}">${DECKS[k]}<i>${counts[k]}</i></button>`).join("")}</div>
-    </div>
-    <div>
-      <div class="sec-h">MULTIPLICADOR POR RACHA · UN ERROR LO REINICIA</div>
-      <div class="ladder">${TIERS.map((t,i)=>`<span class="rung" style="background:${TIER_COLORS[i]}">×${i+1} <span>${t===0?"inicio":t+" seguidas"}</span></span>`).join("")}</div>
-    </div>
-    <div class="rec"><div><small>RÉCORD</small><b>${r.score.toLocaleString("de-DE")}</b></div><div><small>MEJOR RACHA</small><b>${r.streak}</b></div></div>
-    <button class="cta go" data-act="play">Jugar · 3 vidas</button>
-  </div>`;
+  try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(TP().say(v)); u.lang="de-DE"; u.rate=.9; speechSynthesis.speak(u); }catch(e){}
 }
 
 function renderPlay(){
-  const v=V[S.cur];
-  const tagTxt = v.lv==="M" ? "MIS TARJETAS" : v.lv;
+  const T=TP(), v=cur(), rv=S.reviewKeys.includes(v.k);
+  const poolA=`<div class="pool"><div class="pool-h">${T.A.pool}</div><div class="grid ${T.A.grid}">${S.poolA.map(x=>`<button class="${T.A.tile}" data-act="a" data-v="${x}">${x}</button>`).join("")}</div></div>`;
+  const poolB=`<div class="pool"><div class="pool-h">${T.B.pool}</div><div class="cases">${Object.entries(T.B.opts).map(([k,o])=>`<button class="case ${o.cls}" data-act="b" data-v="${k}"><span class="shape"></span>${o.long}</button>`).join("")}</div></div>`;
   app.innerHTML=`
   <div class="hud">
-    <div class="score"><small>PUNTOS</small><span id="score">0</span></div>
+    <div class="score"><small>${t("points")}</small><span id="score">0</span></div>
     <span class="lives" id="lives"></span>
     <span class="mult" id="mult">×1</span>
-    <button class="iconbtn" data-act="menu" aria-label="Menú">✕</button>
+    <button class="iconbtn" data-act="menu" aria-label="${t("menu")}">✕</button>
   </div>
   <div class="streak"><div class="track"><div class="fill" id="fill"></div></div><div class="streak-label" id="slabel"></div></div>
   <div class="stage">
-    <div class="es-card"><span class="tag">${tagTxt}</span><div class="lbl">ESPAÑOL</div><div class="es">${v.es}</div></div>
+    <div class="es-card"><span class="tag ${rv?"rv":""}">${rv?t("review"):lvTag(T,v)}</span><div class="lbl">${t("srcLang")}</div><div class="es">${mean(v)}</div></div>
     <div class="trio" id="trio"></div>
-    ${S.mode===2?`<div class="pool"><div class="pool-h">VERBO ALEMÁN</div><div class="grid g2">${S.verbs.map(d=>`<button class="tile vb" data-act="verb" data-v="${d}">${d}</button>`).join("")}</div></div>`:""}
-    <div class="pool"><div class="pool-h">PRÄPOSITION</div><div class="grid g3">${S.preps.map(p=>`<button class="tile" data-act="prep" data-v="${p}">${p}</button>`).join("")}</div></div>
-    <div class="pool"><div class="pool-h">KASUS</div><div class="cases">
-      <button class="case akk" data-act="case" data-v="A"><span class="shape"></span>Akkusativ</button>
-      <button class="case dat" data-act="case" data-v="D"><span class="shape"></span>Dativ</button></div></div>
+    ${S.level===2?`<div class="pool"><div class="pool-h">${t("germanVerb")}</div><div class="grid g2">${S.verbs.map(d=>`<button class="tile vb" data-act="verb" data-v="${d}">${d}</button>`).join("")}</div></div>`:""}
+    ${T.order.map(x=>x==="a"?poolA:poolB).join("")}
   </div>`;
   updateHud(); updatePicks();
 }
 
 function updateHud(){
   if(S.screen!=="play") return;
-  const t=tierOf(S.streak), col=TIER_COLORS[t];
+  const tr=tierOf(S.streak), col=TIER_COLORS[tr];
   document.documentElement.style.setProperty("--tier",col);
   const sc=document.getElementById("score"); if(sc) countTo(sc,S.score);
-  const m=document.getElementById("mult"); if(m){ m.textContent="×"+(t+1); m.classList.toggle("hot",t>0); }
+  const m=document.getElementById("mult"); if(m){ m.textContent="×"+(tr+1); m.classList.toggle("hot",tr>0); }
   const l=document.getElementById("lives"); if(l) l.innerHTML=[0,1,2].map(i=>`<span class="${i<S.lives?"":"off"}">♥</span>`).join("");
-  const next=TIERS[t+1], prev=TIERS[t];
+  const next=TIERS[tr+1], prev=TIERS[tr];
   const f=document.getElementById("fill"), lab=document.getElementById("slabel");
   if(f) f.style.width = next===undefined ? "100%" : ((S.streak-prev)/(next-prev)*100)+"%";
-  if(lab) lab.innerHTML = `<span>Racha <b>${S.streak}</b></span><span>${next===undefined?"Multiplicador máximo":`${next-S.streak} más para <b>×${t+2}</b>`}</span>`;
+  if(lab) lab.innerHTML = `<span>${t("streak")} <b>${S.streak}</b></span><span>${next===undefined?t("maxMult"):t("moreFor",next-S.streak,tr+2)}</span>`;
 }
 let shown=0;
 function countTo(el,target){
@@ -652,52 +1036,49 @@ function countTo(el,target){
 }
 
 function updatePicks(){
-  const p=S.pick, trio=document.getElementById("trio"); if(!trio) return;
-  const verbSlot = S.mode===1
-    ? `<div class="slot verb locked"><span class="k">VERBO</span><span class="v">???</span></div>`
-    : `<button class="slot verb ${p.verb?"filled":""}" data-act="clear" data-v="verb"><span class="k">VERBO</span><span class="v">${p.verb||"—"}</span></button>`;
-  const caseCls = p.case ? (p.case==="A"?"filled akk":"filled dat") : "";
-  trio.innerHTML = verbSlot +
-    `<span class="plus">+</span><button class="slot ${p.prep?"filled":""}" data-act="clear" data-v="prep"><span class="k">PRÄP.</span><span class="v">${p.prep||"—"}</span></button>` +
-    `<span class="plus">+</span><button class="slot ${caseCls}" data-act="clear" data-v="case"><span class="k">KASUS</span><span class="v">${p.case?(p.case==="A"?"Akk":"Dat"):"—"}</span></button>`;
-  document.querySelectorAll('[data-act="verb"]').forEach(b=>b.classList.toggle("sel",b.dataset.v===p.verb));
-  document.querySelectorAll('[data-act="prep"]').forEach(b=>b.classList.toggle("sel",b.dataset.v===p.prep));
-  document.querySelectorAll('[data-act="case"]').forEach(b=>b.classList.toggle("sel",b.dataset.v===p.case));
+  const T=TP(), p=S.pick, trio=document.getElementById("trio"); if(!trio) return;
+  const verbSlot = S.level===1
+    ? `<div class="slot verb locked"><span class="k">${t("verb")}</span><span class="v">???</span></div>`
+    : `<button class="slot verb ${p.verb?"filled":""}" data-act="clear" data-v="verb"><span class="k">${t("verb")}</span><span class="v">${p.verb||"—"}</span></button>`;
+  const slotA = `<button class="slot ${T.A.wide?"wide":""} ${p.a?"filled":""}" data-act="clear" data-v="a"><span class="k">${T.A.slot}</span><span class="v">${p.a||"—"}</span></button>`;
+  const o = p.b ? T.B.opts[p.b] : null;
+  const slotB = `<button class="slot ${o?"filled "+o.cls:""}" data-act="clear" data-v="b"><span class="k">${T.B.slot}</span><span class="v">${o?o.short:"—"}</span></button>`;
+  trio.innerHTML = verbSlot + T.order.map(x=>`<span class="plus">+</span>${x==="a"?slotA:slotB}`).join("");
+  ["verb","a","b"].forEach(key=>document.querySelectorAll(`[data-act="${key}"]`).forEach(b=>b.classList.toggle("sel",b.dataset.v===p[key])));
 }
 
 function showSheet(ok,pts,fast){
-  const v=V[S.cur], p=S.pick;
-  const yours = ok ? "" : `<div class="yours">Tu trío: <s>${S.mode===2?p.verb+" ":""}${p.prep} + ${p.case==="A"?"Akk":"Dat"}</s></div>`;
+  const T=TP(), v=cur(), p=S.pick;
+  const yours = ok ? "" : `<div class="yours">${t("yourTrio")} <s>${S.level===2?p.verb+" ":""}${T.pickPlain(p)}</s></div>`;
   sheet.innerHTML=`<div class="sheet-in">
-    <div class="verdict ${ok?"ok":"ko"}"><h2>${ok?(S.streak>=TIERS[2]?"¡Imparable!":"¡Correcto!"):"Casi"}</h2>
+    <div class="verdict ${ok?"ok":"ko"}"><h2>${ok?(S.streak>=TIERS[2]?t("unstoppable"):t("correct")):t("almost")}</h2>
       ${ok?`<span class="pts">+${pts}${fast?" ⚡":""}</span>`:`<span class="lives">${[0,1,2].map(i=>`<span class="${i<S.lives?"":"off"}">♥</span>`).join("")}</span>`}</div>
     <div class="de-card">
-      <div class="de">${v.de} <span class="pp">${v.p}</span> ${caseBadge(v.c)}</div>
-      <div class="ex">${markPrep(v.ex,v.p)}</div>
-      <div class="tr">${v.tr}</div>
+      <div class="de">${T.deLine(v)}</div>
+      <div class="ex">${T.mark(v)}</div>
+      <div class="tr">${v.tr[S.lang]}</div>
     </div>
     ${yours}
-    ${ok&&fast?`<div class="yours">⚡ Respuesta rápida: +50</div>`:""}
-    <button class="cta ${S.lives<=0?"":"go"}" data-act="next">${S.lives<=0?"Ver resultado":"Siguiente"}</button>
+    ${ok&&fast?`<div class="yours">${t("fast")}</div>`:""}
+    <button class="cta ${S.lives<=0?"":"go"}" data-act="next">${S.lives<=0?t("seeResult"):t("next")}</button>
   </div>`;
   sheet.hidden=false;
   const b=sheet.querySelector("[data-act=next]"); b && b.focus({preventScroll:true});
 }
 
 function renderOver(){
-  const r=getRec();
-  const acc = S.answered ? Math.round(S.hits/S.answered*100) : 0;
+  const T=TP(), r=getRec(), acc = S.answered ? Math.round(S.hits/S.answered*100) : 0;
   app.innerHTML=`
   <div class="home over">
-    <div class="sec-h" style="margin:0">${DECKS[S.deck].toUpperCase()} · NIVEL ${S.mode}</div>
-    <h1>Fin de la ronda</h1>
-    <div><div class="big-score">${S.score.toLocaleString("de-DE")}</div>${S.newRec?`<span class="newrec">NUEVO RÉCORD</span>`:`<span class="yours">Récord: ${r.score.toLocaleString("de-DE")}</span>`}</div>
+    <div class="sec-h" style="margin:0">${T.name.toUpperCase()} · ${deckLabel(S.deck).toUpperCase()} · ${t("level")} ${S.level}</div>
+    <h1>${t("roundOver")}</h1>
+    <div><div class="big-score">${S.score.toLocaleString("de-DE")}</div>${S.newRec?`<span class="newrec">${t("newRecord")}</span>`:`<span class="yours">${t("recordLbl")} ${r.score.toLocaleString("de-DE")}</span>`}</div>
     <div class="rec">
-      <div><small>MEJOR RACHA</small><b>${S.maxStreak}</b>${S.newStreak?` <span class="newrec">NUEVA</span>`:""}</div>
-      <div><small>ACIERTOS</small><b>${S.hits}/${S.answered}</b> <span class="yours">${acc}%</span></div>
+      <div><small>${t("bestStreak")}</small><b>${S.maxStreak}</b>${S.newStreak?` <span class="newrec">${t("newTag")}</span>`:""}</div>
+      <div><small>${t("hits")}</small><b>${S.hits}/${S.answered}</b> <span class="yours">${acc}%</span></div>
     </div>
-    ${S.missed.length?`<div><div class="sec-h">PARA REPASAR</div><div class="missed">${S.missed.map(i=>{const v=V[i];return `<div class="miss"><span>${v.es}</span><span>${v.de} ${v.p} + ${v.c==="A"?"Akk":"Dat"}</span></div>`}).join("")}</div></div>`:""}
-    <div class="row3"><button class="ghost" data-act="menu">Menú</button><button class="ghost" data-act="learn">Aprender</button><button class="cta go" data-act="play">Otra ronda</button></div>
+    ${S.missed.length?`<div><div class="sec-h">${t("toReview")}</div><div class="missed">${S.missed.map(k=>{const v=T.by[k];return `<div class="miss"><span>${mean(v)}</span><span>${T.plain(v)}</span></div>`}).join("")}</div></div>`:""}
+    <div class="row3"><button class="ghost" data-act="menu">${t("menu")}</button><button class="ghost" data-act="learn">${t("learn")}</button><button class="cta go" data-act="play">${t("again")}</button></div>
   </div>`;
 }
 
@@ -706,35 +1087,37 @@ function onAct(e){
   const b=e.target.closest("[data-act]"); if(!b) return;
   const act=b.dataset.act, val=b.dataset.v;
   switch(act){
-    case "sound": S.sound=!S.sound; try{localStorage.setItem("praepo-trio-sound",S.sound?"1":"0");}catch(_){} sfx.tap(); render(); break;
-    case "mode": S.mode=+val; sfx.tap(); render(); break;
+    case "sound": S.sound=!S.sound; LS.set("praepo-trio-sound",S.sound?"1":"0"); sfx.tap(); render(); break;
+    case "lang": S.lang=val; LS.set("praepo-trio-lang",val); sfx.tap(); render(); break;
+    case "topic": S.topic=val; S.screen="home"; S.li=0; S.lf=false; sfx.start(); render(); break;
+    case "topics": S.screen="topics"; sfx.tap(); render(); break;
+    case "level": S.level=+val; sfx.tap(); render(); break;
     case "deck": S.deck=val; sfx.tap(); render(); break;
-    case "play": shown=0; startGame(); break;
-    case "menu": S.screen="home"; sheet.hidden=true; sfx.tap(); render(); break;
+    case "play": startGame(); break;
+    case "menu": endSession("quit"); S.screen="home"; sheet.hidden=true; sfx.tap(); render(); break;
     case "next": sfx.tap(); afterSheet(); break;
-    case "verb": case "prep": case "case":
+    case "verb": case "a": case "b":
       if(S.phase!=="pick") return;
-      S.pick[act]=val; sfx.select(act==="verb"?0:act==="prep"?4:7); updatePicks();
+      S.pick[act]=val; sfx.select(act==="verb"?0:act==="a"?4:7); updatePicks();
       if(complete()){ S.phase="checking"; setTimeout(check,180); }
       break;
     case "clear":
       if(S.phase!=="pick" || !S.pick[val]) return;
       S.pick[val]=null; sfx.tap(); updatePicks(); break;
-    /* --- aprender --- */
-    case "learn": S.screen="learn"; S.lf=false; sheet.hidden=true; sfx.tap(); render(); break;
-    case "size": S.setSize=+val; sfx.tap(); b.parentElement.querySelectorAll(".chip").forEach(c=>c.classList.toggle("on",c===b)); break;
-    case "src": S.setSrc=val; sfx.tap(); b.parentElement.querySelectorAll(".chip").forEach(c=>c.classList.toggle("on",c===b)); break;
-    case "newset": newSet(); sfx.level(); burst(innerWidth/2,innerHeight*.35,70,TIER_COLORS); render(); toast(`Set nuevo: ${S.set.length} verbos`); break;
-    case "mine": S.set=MINE.slice(); S.li=0; S.lf=false; saveSet(); sfx.start(); render(); toast("Set: mis 10 tarjetas"); break;
+    case "learn": endSession("quit"); S.screen="learn"; S.lf=false; sheet.hidden=true; sfx.tap(); render(); break;
+    case "size": S.sets[S.topic].size=+val; saveSets(); sfx.tap(); b.parentElement.querySelectorAll(".chip").forEach(c=>c.classList.toggle("on",c===b)); break;
+    case "src": S.sets[S.topic].src=val; saveSets(); sfx.tap(); b.parentElement.querySelectorAll(".chip").forEach(c=>c.classList.toggle("on",c===b)); break;
+    case "newset": newSet(); sfx.level(); burst(innerWidth/2,innerHeight*.35,70,TIER_COLORS); render(); toast(t("newSetToast",S.sets[S.topic].keys.length)); break;
+    case "mine": S.sets.prep.keys=TOPICS.prep.start.slice(); S.li=0; S.lf=false; saveSets(); sfx.start(); render(); toast(t("mineToast")); break;
     case "view": S.lview=val; sfx.tap(); document.querySelectorAll('[data-act="view"]').forEach(c=>c.classList.toggle("on",c===b)); renderLView(); break;
     case "flip":
       if(swiped){ swiped=false; return; }
       S.lf=!S.lf; document.getElementById("flip").classList.toggle("on",S.lf); sfx.select(S.lf?7:2);
       break;
-    case "speak": e.stopPropagation(); speak(setVerbs()[S.li]); break;
+    case "speak": e.stopPropagation(); speak(deckList("set")[S.li]); break;
     case "lprev": lmove(-1); break;
     case "lnext": lmove(1); break;
-    case "playset": S.deck="set"; shown=0; startGame(); break;
+    case "playset": S.deck="set"; startGame(); break;
   }
 }
 app.addEventListener("click",onAct); sheet.addEventListener("click",onAct);
@@ -752,10 +1135,10 @@ app.addEventListener("pointerup",e=>{
 
 /* ======================= BOOT ======================= */
 function start(data){
-  if(data && data.S && data.S.screen){ S=Object.assign(S,data.S); shown=S.score||0; if(S.screen==="play"){ S.phase="pick"; S.pick={verb:null,prep:null,case:null}; } }
-  if(!DECKS[S.deck]) S.deck="set";
-  if(!Array.isArray(S.set) || !S.set.length) S.set=MINE.slice();
-  if(S.screen==="play" && (S.cur==null || !V[S.cur])) S.screen="home";
+  if(data && data.S && data.S.v===2){
+    S=Object.assign(S,data.S); shown=S.score||0;
+    if(S.screen==="play"){ if(!S.cur || !TP().by[S.cur]) S.screen="home"; else { S.phase="pick"; S.pick={verb:null,a:null,b:null}; } }
+  }
   render();
 }
 try{ window.claude?.hot?.snapshot?.(()=>({S})); }catch(e){}
